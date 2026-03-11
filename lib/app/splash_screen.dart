@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:voice_2_note_ai/core/constants/app_constants.dart';
 import 'package:voice_2_note_ai/features/notes/notes_screen.dart';
 
 /// Uygulama açılışında gösterilen tanıtım / karşılama ekranı.
-/// İlk açan kullanıcılar için kısa tanıtım, "Başla" ile ana sayfaya geçiş.
+/// Sadece ilk yüklemede gösterilir; "Başla" ile ana sayfaya geçilir ve bir daha gösterilmez.
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
+
+  Future<void> _onStart(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppConstants.introSeenKey, true);
+    if (!context.mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (context) => const NotesScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,13 +52,7 @@ class SplashScreen extends StatelessWidget {
               ),
               const Spacer(flex: 2),
               FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const NotesScreen(),
-                    ),
-                  );
-                },
+                onPressed: () => _onStart(context),
                 icon: const Icon(Icons.arrow_forward_rounded),
                 label: const Text('Başla'),
                 style: FilledButton.styleFrom(
