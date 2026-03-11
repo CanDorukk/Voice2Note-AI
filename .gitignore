@@ -41,3 +41,28 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Cursor specific
+
+/cursor
+/.cursor
+
+# Secrets / API / Herkese açık olmaması gerekenler
+.env
+.env.*
+!.env.example
+*.env
+**/secrets/
+**/secrets.*
+**/*_secret*
+**/*api_key*
+**/*apikey*
+**/config/secrets.*
+**/keys/
+*.jks
+*.keystore
+key.properties
+GoogleService-Info.plist
+google-services.json
+**/credentials*
+**/.credentials
