@@ -1,2 +1,2 @@
-// Navigation / routing placeholder.
-// Will contain route definitions and navigation logic.
+// Gelecekte named route'lar ve deep link burada tanımlanacak.
+// Şu an geçişler ekranlar içinde Navigator ile yapılıyor.
