@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
+import 'package:voice_2_note_ai/features/recording/recording_screen.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 
 /// Not listesi ekranı. DB'den notları çeker; boşsa boş durum gösterir.
@@ -14,6 +15,17 @@ class NotesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notlar'),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => const RecordingScreen(),
+            ),
+          );
+        },
+        icon: const Icon(Icons.mic_rounded),
+        label: const Text('Kayıt'),
       ),
       body: notesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
