@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
 import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
@@ -7,9 +10,9 @@ import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
 ///
 /// Şimdilik amaç:
 /// - transcript ve summary'ı göstermek
-/// - Ses/Paylaş/PDF gibi butonları UI olarak hazırlamak
-/// - Oynatma / PDF / paylaşım fonksiyonelliği sonraki adımda eklenecek
-class NoteDetailScreen extends StatelessWidget {
+/// - Oynatmayı (just_audio) fonksiyonel hale getirmek
+/// - PDF/Paylaşım fonksiyonelliği sonraki adımda
+class NoteDetailScreen extends StatefulWidget {
   const NoteDetailScreen({
     super.key,
     required this.note,
@@ -18,13 +21,100 @@ class NoteDetailScreen extends StatelessWidget {
   final NoteModel note;
 
   @override
+  State<NoteDetailScreen> createState() => _NoteDetailScreenState();
+}
+
+class _NoteDetailScreenState extends State<NoteDetailScreen> {
+  final AudioPlayer _player = AudioPlayer();
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+  bool _isPlaying = false;
+
+  StreamSubscription<Duration>? _positionSub;
+  StreamSubscription<Duration?>? _durationSub;
+  StreamSubscription<PlayerState>? _playerStateSub;
+
+  String? _loadedPath;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _positionSub = _player.positionStream.listen((d) {
+      if (!mounted) return;
+      setState(() => _position = d);
+    });
+    _durationSub = _player.durationStream.listen((d) {
+      if (!mounted) return;
+      setState(() => _duration = d ?? Duration.zero);
+    });
+    _playerStateSub = _player.playerStateStream.listen((state) {
+      if (!mounted) return;
+      setState(() => _isPlaying = state.playing);
+    });
+  }
+
+  @override
+  void dispose() {
+    _positionSub?.cancel();
+    _durationSub?.cancel();
+    _playerStateSub?.cancel();
+    _player.dispose();
+    super.dispose();
+  }
+
+  static String _fmt(Duration d) {
+    final m = d.inMinutes;
+    final s = d.inSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _togglePlay() async {
+    // Playback only supports file paths for now.
+    final audioPath = widget.note.audioPath;
+    if (audioPath.startsWith('content://')) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Oynatma (content URI) yakında')),
+      );
+      return;
+    }
+
+    try {
+      if (_loadedPath != audioPath) {
+        await _player.stop();
+        await _player.setFilePath(audioPath);
+        _loadedPath = audioPath;
+      }
+
+      if (_player.playing) {
+        await _player.pause();
+      } else {
+        await _player.play();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Oynatma hatası: $e')),
+      );
+    }
+  }
+
+  Future<void> _seekTo(double value) async {
+    if (_duration == Duration.zero) return;
+    final ms = value.round().clamp(0, _duration.inMilliseconds);
+    await _player.seek(Duration(milliseconds: ms));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final createdAt = DateTime.fromMillisecondsSinceEpoch(note.createdAt * 1000);
+    final createdAt =
+        DateTime.fromMillisecondsSinceEpoch(widget.note.createdAt * 1000);
     final dateStr = '${createdAt.day}.${createdAt.month}.${createdAt.year}';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Not ${note.id ?? ''}'.trim()),
+        title: Text('Not ${widget.note.id ?? ''}'.trim()),
       ),
       body: SafeArea(
         child: ListView(
@@ -39,9 +129,9 @@ class NoteDetailScreen extends StatelessWidget {
               title: 'Transcript',
               icon: Icons.mic_none_rounded,
               child: Text(
-                note.transcript.trim().isEmpty
+                widget.note.transcript.trim().isEmpty
                     ? 'Transcript henüz hazır değil.'
-                    : note.transcript,
+                    : widget.note.transcript,
               ),
             ),
             const SizedBox(height: 12),
@@ -49,15 +139,27 @@ class NoteDetailScreen extends StatelessWidget {
               title: 'Özet',
               icon: Icons.lightbulb_outline_rounded,
               child: Text(
-                note.summary.trim().isEmpty ? 'Özet henüz hazır değil.' : note.summary,
+                widget.note.summary.trim().isEmpty
+                    ? 'Özet henüz hazır değil.'
+                    : widget.note.summary,
               ),
             ),
             const SizedBox(height: 18),
-            _AudioPlaybackPlaceholder(audioPath: note.audioPath),
+            _AudioPlaybackCard(
+              audioPath: widget.note.audioPath,
+              position: _position,
+              duration: _duration,
+              isPlaying: _isPlaying,
+              onPlayPause: _togglePlay,
+              onSeek: _seekTo,
+            ),
             const SizedBox(height: 14),
-            _ActionsPlaceholder(note: note),
+            _ActionsPlaceholder(
+              note: widget.note,
+              onPlay: _togglePlay,
+            ),
             Text(
-              'Audio: ${note.audioPath}',
+              'Audio: ${widget.note.audioPath}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -69,12 +171,24 @@ class NoteDetailScreen extends StatelessWidget {
   }
 }
 
-class _AudioPlaybackPlaceholder extends StatelessWidget {
-  const _AudioPlaybackPlaceholder({
+class _AudioPlaybackCard extends StatelessWidget {
+  const _AudioPlaybackCard({
     required this.audioPath,
+    required this.position,
+    required this.duration,
+    required this.isPlaying,
+    required this.onPlayPause,
+    required this.onSeek,
   });
 
   final String audioPath;
+  final Duration position;
+  final Duration duration;
+  final bool isPlaying;
+  final VoidCallback onPlayPause;
+  final ValueChanged<double> onSeek;
+
+  static String _fmt(Duration d) => _NoteDetailScreenState._fmt(d);
 
   @override
   Widget build(BuildContext context) {
@@ -87,10 +201,10 @@ class _AudioPlaybackPlaceholder extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.play_circle_outline_rounded),
+                Icon(isPlaying ? Icons.pause_circle_outline_rounded : Icons.play_circle_outline_rounded),
                 const SizedBox(width: 8),
                 Text(
-                  'Oynatma (yakında)',
+                  'Oynatma',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
@@ -99,27 +213,25 @@ class _AudioPlaybackPlaceholder extends StatelessWidget {
             Row(
               children: [
                 IconButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Oynatma yakında eklenecek')),
-                    );
-                  },
-                  icon: const Icon(Icons.play_arrow_rounded),
+                  onPressed: onPlayPause,
+                  icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
                 ),
                 const SizedBox(width: 8),
-                // ignore: prefer_const_constructors
                 Expanded(
-                  // ignore: prefer_const_constructors
                   child: Slider(
-                    value: 0,
-                    onChanged: null, // disabled placeholder
+                    min: 0,
+                    max: duration.inMilliseconds.toDouble().clamp(0, 1e12),
+                    value: position.inMilliseconds.toDouble().clamp(0, duration.inMilliseconds.toDouble()),
+                    onChanged: duration == Duration.zero
+                        ? null
+                        : (v) => onSeek(v),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              '00:00 / 00:00 (UI iskeleti)',
+              '${_fmt(position)} / ${_fmt(duration)}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -141,9 +253,11 @@ class _AudioPlaybackPlaceholder extends StatelessWidget {
 class _ActionsPlaceholder extends StatelessWidget {
   const _ActionsPlaceholder({
     required this.note,
+    required this.onPlay,
   });
 
   final NoteModel note;
+  final VoidCallback onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -152,11 +266,7 @@ class _ActionsPlaceholder extends StatelessWidget {
       runSpacing: 10,
       children: [
         OutlinedButton.icon(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Oynat yakında eklenecek')),
-            );
-          },
+          onPressed: onPlay,
           icon: const Icon(Icons.play_arrow_rounded),
           label: const Text('Oynat'),
         ),
