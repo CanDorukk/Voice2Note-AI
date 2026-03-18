@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
+import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
 
 /// Tek bir notun detay ekranı (UI iskeleti).
 ///
@@ -53,7 +54,7 @@ class NoteDetailScreen extends StatelessWidget {
             const SizedBox(height: 18),
             _AudioPlaybackPlaceholder(audioPath: note.audioPath),
             const SizedBox(height: 14),
-            const _ActionsPlaceholder(),
+            _ActionsPlaceholder(note: note),
             Text(
               'Audio: ${note.audioPath}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -137,7 +138,11 @@ class _AudioPlaybackPlaceholder extends StatelessWidget {
 }
 
 class _ActionsPlaceholder extends StatelessWidget {
-  const _ActionsPlaceholder();
+  const _ActionsPlaceholder({
+    required this.note,
+  });
+
+  final NoteModel note;
 
   @override
   Widget build(BuildContext context) {
@@ -156,8 +161,10 @@ class _ActionsPlaceholder extends StatelessWidget {
         ),
         OutlinedButton.icon(
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('PDF yakında eklenecek')),
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => PdfPreviewScreen(note: note),
+              ),
             );
           },
           icon: const Icon(Icons.picture_as_pdf_rounded),
