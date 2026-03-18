@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voice_2_note_ai/services/speech_to_text_service.dart';
+import 'package:voice_2_note_ai/services/summary_service.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/recording/recording_provider.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
@@ -52,11 +54,15 @@ class RecordingScreen extends ConsumerWidget {
                     if (exists) {
                       // Bu adımda transcript/summary'ı placeholder olarak kaydediyoruz.
                       // Bir sonraki adımda Whisper + TextRank ile gerçek değerleri dolduracağız.
+                    final stt = SpeechToTextService();
+                    final summarizer = SummaryService();
+                    final transcript = await stt.transcribe(audioPath: path);
+                    final summary = await summarizer.summarize(transcript);
                       await ref.read(noteRepositoryProvider).insert(
                             NoteModel(
                               audioPath: path,
-                              transcript: 'Transkript eklenecek',
-                              summary: 'Özet eklenecek',
+                            transcript: transcript,
+                            summary: summary,
                               duration: durationSeconds,
                               createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
                             ),
