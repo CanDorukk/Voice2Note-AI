@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/recording/recording_provider.dart';
+import 'package:voice_2_note_ai/models/note_model.dart';
 
 /// Ses kayıt ekranı. Kayıt başlat/durdur, süre gösterimi.
 class RecordingScreen extends ConsumerWidget {
@@ -42,21 +44,36 @@ class RecordingScreen extends ConsumerWidget {
                 isRecording: state.isRecording,
                 onPressed: () async {
                   if (state.isRecording) {
+                    final durationSeconds = state.durationSeconds;
                     final path = await notifier.stopRecording();
                     if (!context.mounted) return;
-                    final exists = path != null &&
-                        (path.startsWith('content://') || File(path).existsSync());
+                    final exists =
+                        path != null && (path.startsWith('content://') || File(path).existsSync());
                     if (exists) {
+                      // Bu adımda transcript/summary'ı placeholder olarak kaydediyoruz.
+                      // Bir sonraki adımda Whisper + TextRank ile gerçek değerleri dolduracağız.
+                      await ref.read(noteRepositoryProvider).insert(
+                            NoteModel(
+                              audioPath: path,
+                              transcript: 'Transkript eklenecek',
+                              summary: 'Özet eklenecek',
+                              duration: durationSeconds,
+                              createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                            ),
+                          );
+                      if (!context.mounted) return;
+                      // Alttaki NotesScreen hala görünür durumdaysa liste otomatik güncellensin.
+                      ref.invalidate(notesListProvider);
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text(
-                            'Ses kaydı kaydedildi.',
-                          ),
+                          content: const Text('Not kaydedildi (placeholder)'),
                           duration: const Duration(seconds: 3),
                           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
+                      if (!context.mounted) return;
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -65,6 +82,7 @@ class RecordingScreen extends ConsumerWidget {
                         ),
                       );
                     }
+                    if (!context.mounted) return;
                     Navigator.of(context).pop();
                   } else {
                     await notifier.startRecording();
