@@ -52,34 +52,93 @@ class RecordingScreen extends ConsumerWidget {
                     final exists =
                         path != null && (path.startsWith('content://') || File(path).existsSync());
                     if (exists) {
-                      // Bu adımda transcript/summary'ı placeholder olarak kaydediyoruz.
-                      // Bir sonraki adımda Whisper + TextRank ile gerçek değerleri dolduracağız.
-                    final stt = SpeechToTextService();
-                    final summarizer = SummaryService();
-                    final transcript = await stt.transcribe(audioPath: path);
-                    final summary = await summarizer.summarize(transcript);
-                      await ref.read(noteRepositoryProvider).insert(
-                            NoteModel(
-                              audioPath: path,
-                            transcript: transcript,
-                            summary: summary,
-                              duration: durationSeconds,
-                              createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-                            ),
-                          );
-                      if (!context.mounted) return;
-                      // Alttaki NotesScreen hala görünür durumdaysa liste otomatik güncellensin.
-                      ref.invalidate(notesListProvider);
+                      final stt = SpeechToTextService();
+                      final summarizer = SummaryService();
 
+                      String? transcript;
+                      String? summary;
+
+                      await showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (dialogContext) {
+                          final navigator = Navigator.of(dialogContext);
+                          var started = false;
+                          return StatefulBuilder(
+                            builder: (context, setState) {
+                              String stepText = 'Transkript alınıyor...';
+                              if (!started) {
+                                started = true;
+                                Future<void>(() async {
+                                  final minVisibleUntil = DateTime.now().add(
+                                    const Duration(seconds: 1),
+                                  );
+
+                                  setState(() => stepText = 'Transkript alınıyor...');
+                                  // Stub servisler çok hızlı döndüğü için
+                                  // bu UI adımının gözükmesini sağlamak için kısa gecikme.
+                                  await Future<void>.delayed(const Duration(milliseconds: 250));
+                                  if (!context.mounted) return;
+                                  transcript = await stt.transcribe(audioPath: path);
+
+                                  if (!context.mounted) return;
+                                  setState(() => stepText = 'Özet hazırlanıyor...');
+                                  await Future<void>.delayed(const Duration(milliseconds: 150));
+                                  if (!context.mounted) return;
+                                  summary = await summarizer.summarize(transcript ?? '');
+
+                                  await ref.read(noteRepositoryProvider).insert(
+                                        NoteModel(
+                                          audioPath: path,
+                                          transcript: transcript ?? '',
+                                          summary: summary ?? '',
+                                          duration: durationSeconds,
+                                          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                                        ),
+                                      );
+
+                                  ref.invalidate(notesListProvider);
+
+                                  final now = DateTime.now();
+                                  if (now.isBefore(minVisibleUntil)) {
+                                    await Future<void>.delayed(minVisibleUntil.difference(now));
+                                  }
+
+                                  if (!context.mounted) return;
+                                  if (navigator.canPop()) navigator.pop();
+                                });
+                              }
+
+                              return AlertDialog(
+                                title: const Text('İşleniyor'),
+                                content: Row(
+                                  children: [
+                                    const CircularProgressIndicator(),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(
+                                        stepText,
+                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text('Not kaydedildi (placeholder)'),
+                          content: const Text('Not kaydedildi'),
                           duration: const Duration(seconds: 3),
-                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primaryContainer,
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
-                      if (!context.mounted) return;
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
