@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:voice_2_note_ai/app/app.dart';
 import 'package:voice_2_note_ai/database/database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper.instance.init();
+  await MediaStore.ensureInitialized();
+  MediaStore.appFolder = 'Voice2 Note AI';
   runApp(
     const ProviderScope(
       child: App(),

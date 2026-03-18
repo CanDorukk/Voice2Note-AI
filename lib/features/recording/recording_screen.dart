@@ -1,11 +1,24 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-/// Ses kayıt ekranı. Şu an sadece UI iskeleti; kayıt mantığı sonraki adımda.
-class RecordingScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voice_2_note_ai/features/recording/recording_provider.dart';
+
+/// Ses kayıt ekranı. Kayıt başlat/durdur, süre gösterimi.
+class RecordingScreen extends ConsumerWidget {
   const RecordingScreen({super.key});
 
+  static String _formatDuration(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(recordingProvider);
+    final notifier = ref.read(recordingProvider.notifier);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ses kaydı'),
@@ -16,9 +29,9 @@ class RecordingScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                '0:00',
-                style: TextStyle(
+              Text(
+                _formatDuration(state.durationSeconds),
+                style: const TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.w300,
                   fontFeatures: [FontFeature.tabularFigures()],
@@ -26,13 +39,49 @@ class RecordingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 48),
               _RecordButton(
-                onPressed: () {
-                  // Kayıt başlat/durdur mantığı sonraki adımda.
+                isRecording: state.isRecording,
+                onPressed: () async {
+                  if (state.isRecording) {
+                    final path = await notifier.stopRecording();
+                    if (!context.mounted) return;
+                    final exists = path != null &&
+                        (path.startsWith('content://') || File(path).existsSync());
+                    if (exists) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                            'Ses kaydı kaydedildi.',
+                          ),
+                          duration: const Duration(seconds: 3),
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Kayıt dosyası oluşturulamadı.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                    Navigator.of(context).pop();
+                  } else {
+                    await notifier.startRecording();
+                    if (!context.mounted) return;
+                    if (!ref.read(recordingProvider).isRecording) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Mikrofon izni gerekli'),
+                        ),
+                      );
+                    }
+                  }
                 },
               ),
               const SizedBox(height: 24),
               Text(
-                'Kayda başlamak için dokunun',
+                state.isRecording ? 'Durdurmak için dokunun' : 'Kayda başlamak için dokunun',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -46,8 +95,12 @@ class RecordingScreen extends StatelessWidget {
 }
 
 class _RecordButton extends StatelessWidget {
-  const _RecordButton({required this.onPressed});
+  const _RecordButton({
+    required this.isRecording,
+    required this.onPressed,
+  });
 
+  final bool isRecording;
   final VoidCallback onPressed;
 
   @override
@@ -62,16 +115,20 @@ class _RecordButton extends StatelessWidget {
           height: 88,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.errorContainer,
+            color: isRecording
+                ? Theme.of(context).colorScheme.error
+                : Theme.of(context).colorScheme.errorContainer,
             border: Border.all(
               color: Theme.of(context).colorScheme.error,
               width: 4,
             ),
           ),
           child: Icon(
-            Icons.mic_rounded,
+            isRecording ? Icons.stop_rounded : Icons.mic_rounded,
             size: 40,
-            color: Theme.of(context).colorScheme.onErrorContainer,
+            color: isRecording
+                ? Theme.of(context).colorScheme.onError
+                : Theme.of(context).colorScheme.onErrorContainer,
           ),
         ),
       ),
