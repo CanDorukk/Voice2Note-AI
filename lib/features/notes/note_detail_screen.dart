@@ -33,6 +33,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration?>? _durationSub;
   StreamSubscription<PlayerState>? _playerStateSub;
+  StreamSubscription<ProcessingState>? _processingSub;
 
   String? _loadedPath;
 
@@ -52,6 +53,19 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
       if (!mounted) return;
       setState(() => _isPlaying = state.playing);
     });
+
+    // Parça bittiğinde otomatik başa saralım.
+    _processingSub = _player.processingStateStream.listen((state) async {
+      if (!mounted) return;
+      if (state == ProcessingState.completed) {
+        try {
+          await _player.pause();
+          await _player.seek(Duration.zero);
+        } catch (_) {
+          // some platforms may throw if completed transitions quickly.
+        }
+      }
+    });
   }
 
   @override
@@ -59,6 +73,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     _positionSub?.cancel();
     _durationSub?.cancel();
     _playerStateSub?.cancel();
+    _processingSub?.cancel();
     _player.dispose();
     super.dispose();
   }
