@@ -99,7 +99,28 @@ class _NoteListTile extends StatelessWidget {
       ),
       title: Text(title.isEmpty ? 'Not ${note.id}' : title),
       subtitle: Text(dateStr),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: PopupMenuButton<String>(
+        onSelected: (value) async {
+          if (value == 'delete') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Silme yakında eklenecek')),
+            );
+          }
+        },
+        itemBuilder: (context) => const [
+          PopupMenuItem<String>(
+            value: 'delete',
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline_rounded),
+                SizedBox(width: 8),
+                Text('Sil'),
+              ],
+            ),
+          ),
+        ],
+        child: const Icon(Icons.more_vert_rounded),
+      ),
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute<void>(

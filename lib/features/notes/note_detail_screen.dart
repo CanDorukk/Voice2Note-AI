@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
+import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
 
 /// Tek bir notun detay ekranı (UI iskeleti).
 ///
@@ -172,8 +173,10 @@ class _ActionsPlaceholder extends StatelessWidget {
         ),
         OutlinedButton.icon(
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Paylaş yakında eklenecek')),
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => SharePreviewScreen(note: note),
+              ),
             );
           },
           icon: const Icon(Icons.share_rounded),
