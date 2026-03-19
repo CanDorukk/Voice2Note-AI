@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
+import 'package:voice_2_note_ai/services/share_service.dart';
 
 /// Share (paylaşım) ekranı (UI iskeleti).
 ///
@@ -14,6 +15,7 @@ class SharePreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shareService = ShareService();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Paylaşım (yakında)'),
@@ -45,20 +47,12 @@ class SharePreviewScreen extends StatelessWidget {
               runSpacing: 10,
               children: [
                 OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Transcript paylasim yakinda')),
-                    );
-                  },
+                  onPressed: () => shareService.shareTranscript(note.transcript),
                   icon: const Icon(Icons.share_rounded),
                   label: const Text("Transcript paylas"),
                 ),
                 OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Ozet paylasim yakinda')),
-                    );
-                  },
+                  onPressed: () => shareService.shareSummary(note.summary),
                   icon: const Icon(Icons.share_rounded),
                   label: const Text("Ozet paylas"),
                 ),

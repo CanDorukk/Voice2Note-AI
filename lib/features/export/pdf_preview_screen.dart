@@ -1,5 +1,8 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
+import 'package:voice_2_note_ai/services/pdf_service.dart';
 
 /// PDF preview ekranı (UI iskeleti).
 ///
@@ -14,6 +17,7 @@ class PdfPreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pdfService = PdfService();
     return Scaffold(
       appBar: AppBar(
         title: const Text('PDF Önizleme (yakında)'),
@@ -49,6 +53,26 @@ class PdfPreviewScreen extends StatelessWidget {
                   'Gerçek PDF üretimi bir sonraki adımda eklenecek.',
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () async {
+                // UI: üretim işlemini başlat.
+                final scaffold = ScaffoldMessenger.of(context);
+                scaffold.clearSnackBars();
+
+                final file = await pdfService.generateNotePdfFile(note);
+                scaffold.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'PDF oluşturuldu: ${file.path.split('/').last}\n${file.path}',
+                    ),
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.picture_as_pdf_rounded),
+              label: const Text('PDF oluştur'),
             ),
           ],
         ),

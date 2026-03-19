@@ -5,6 +5,32 @@ allprojects {
     }
 }
 
+// share_plus gibi bazı Android library'ler `flutter.compileSdkVersion` bekler.
+// Flutter'ın root'ta gradle script'ini apply etmek bazı projelerde sorun çıkarabiliyor,
+// bu yüzden burada minimum değerleri fallback olarak veriyoruz.
+//
+// Not: App tarafında Flutter Gradle plugin zaten kendi değerlerini sağlar.
+// Buradaki değerler sadece flutter objesi tanımlı değilse fallback olsun diye.
+if (!project.hasProperty('flutter')) {
+    ext.flutter = [
+        compileSdkVersion: 34,
+        minSdkVersion: 21,
+        targetSdkVersion: 34,
+        ndkVersion: "21.4.7075529"
+    ]
+}
+
+// Kotlin stdlib çakışmalarını engelle (share_plus / diğer pluginler farklı kotlin sürümleri çekebiliyor).
+allprojects {
+    configurations.configureEach { cfg ->
+        cfg.resolutionStrategy.force(
+                'org.jetbrains.kotlin:kotlin-stdlib:1.7.22',
+                'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.22',
+                'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.22'
+        )
+    }
+}
+
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
