@@ -80,13 +80,13 @@ class NotesScreen extends ConsumerWidget {
   }
 }
 
-class _NoteListTile extends StatelessWidget {
+class _NoteListTile extends ConsumerWidget {
   const _NoteListTile({required this.note});
 
   final NoteModel note;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final date = DateTime.fromMillisecondsSinceEpoch(note.createdAt * 1000);
     final dateStr = '${date.day}.${date.month}.${date.year}';
     final title = note.summary.trim().isEmpty
@@ -102,8 +102,43 @@ class _NoteListTile extends StatelessWidget {
       trailing: PopupMenuButton<String>(
         onSelected: (value) async {
           if (value == 'delete') {
+            final id = note.id;
+            if (id == null) return;
+
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (dialogContext) {
+                return AlertDialog(
+                  title: const Text('Sil?'),
+                  content: const Text('Bu notu silmek istediğine emin misin?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(false),
+                      child: const Text('Vazgeç'),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(true),
+                      child: const Text('Sil'),
+                    ),
+                  ],
+                );
+              },
+            );
+
+            if (confirm != true) return;
+
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Silme yakında eklenecek')),
+              const SnackBar(content: Text('Siliniyor...')),
+            );
+
+            await ref.read(noteRepositoryProvider).delete(id);
+
+            if (!context.mounted) return;
+            ref.invalidate(notesListProvider);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Silindi')),
             );
           }
         },
