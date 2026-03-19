@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
+import 'package:voice_2_note_ai/services/pdf_service.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:voice_2_note_ai/services/share_service.dart';
 
 /// Share (paylaşım) ekranı (UI iskeleti).
@@ -57,10 +59,22 @@ class SharePreviewScreen extends StatelessWidget {
                   label: const Text("Ozet paylas"),
                 ),
                 OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('PDF paylasim yakinda')),
-                    );
+                  onPressed: () async {
+                    try {
+                      final pdfService = PdfService();
+                      final file = await pdfService.generateNotePdfFile(note);
+                      if (!context.mounted) return;
+
+                      await Share.shareXFiles(
+                        [XFile(file.path)],
+                        text: 'Voice2 Note AI PDF',
+                      );
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('PDF paylaşılamadı: $e')),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.picture_as_pdf_rounded),
                   label: const Text("PDF paylas"),
