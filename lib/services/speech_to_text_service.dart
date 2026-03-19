@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_service.dart';
 
 /// Speech-to-Text servisi.
 ///
@@ -13,6 +14,8 @@ class SpeechToTextService {
     if (kDebugMode) {
       debugPrint('SpeechToTextService.transcribe audioPath: $audioPath');
     }
-    return 'Dummy transcript (Whisper eklenecek)';
+
+    final whisper = WhisperService();
+    return whisper.transcribe(audioPath: audioPath);
   }
 }

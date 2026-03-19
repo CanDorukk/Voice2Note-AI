@@ -1,16 +1,17 @@
 import 'package:flutter/foundation.dart';
+import 'package:voice_2_note_ai/features/summary/textrank_algorithm.dart';
 
 /// Summary servisi.
 ///
-/// Bu adımda TextRank entegrasyonu henüz yok; dönen değer dummy'dir.
-/// Sonraki adımda bu sınıfın içini TextRank ile dolduracağız.
 class SummaryService {
   Future<String> summarize(String transcript) async {
     if (kDebugMode) {
       debugPrint('SummaryService.summarize transcript length: ${transcript.length}');
     }
-    final trimmed = transcript.trim();
-    if (trimmed.isEmpty) return 'Dummy summary (TextRank eklenecek)';
-    return 'Dummy summary (TextRank eklenecek): ${trimmed.length > 60 ? trimmed.substring(0, 60) : trimmed}';
+
+    // TextRank algoritması (offline, saf Dart).
+    final algo = TextRankAlgorithm();
+    final summary = algo.summarize(transcript);
+    return summary;
   }
 }
