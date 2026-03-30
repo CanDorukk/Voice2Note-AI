@@ -66,3 +66,6 @@ GoogleService-Info.plist
 google-services.json
 **/credentials*
 **/.credentials
+
+# Whisper GGML model (büyük; yerel olarak assets/models/ içine kopyala, commit etme)
+assets/models/*.bin

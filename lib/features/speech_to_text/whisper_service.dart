@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_service.dart';
+
 /// Whisper offline speech-to-text servisi (iskelet).
 ///
 /// Bu adımda henüz whisper.cpp native entegrasyonu yok.
@@ -9,6 +11,11 @@ class WhisperService {
   Future<String> transcribe({required String audioPath}) async {
     if (kDebugMode) {
       debugPrint('WhisperService.transcribe audioPath: $audioPath');
+    }
+
+    final modelPath = await WhisperModelService.instance.ensureReady();
+    if (kDebugMode) {
+      debugPrint('WhisperService: model path: $modelPath');
     }
 
     // TODO: whisper.cpp ile gerçek transkript üretilecek.
