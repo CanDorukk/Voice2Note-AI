@@ -11,3 +11,26 @@
 758	872	796680499	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/3c732m5w/obj/arm64-v8a/libvoice2note_whisper.so	2e874094f2e6ea60
 2	691	796680735	CMakeFiles/voice2note_whisper.dir/voice2note_whisper.cpp.o	b04fff2a572b020e
 691	788	796680735	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/3c732m5w/obj/arm64-v8a/libvoice2note_whisper.so	2e874094f2e6ea60
+93	1879	796681886	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-alloc.c.o	4be9a8c88e417f0c
+1077	2626	796681887	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/hbm.cpp.o	5593eb27911f5435
+73	3512	796681887	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.cpp.o	1d97970c15ad8f53
+1087	3707	796681888	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/quants.c.o	e6c42a92ce57231e
+454	3990	796681888	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-threading.cpp.o	5c7da4d48f64a735
+441	4027	796681888	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-quants.c.o	2cae3846707516a5
+896	4045	796681888	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/traits.cpp.o	217681a964f7a53f
+886	4123	796681887	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.c.o	9529633d4be5e093
+45	4163	796681888	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.c.o	e22d102a48f4fd73
+82	4164	796681889	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-backend.cpp.o	b49d03e88b1d5d60
+486	4171	796681889	_deps/ggml-build/src/CMakeFiles/ggml.dir/ggml-backend-dl.cpp.o	773b42995b72e4c7
+576	4651	796681889	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.cpp.o	168795b3fc26eee5
+2627	4990	796681890	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/mmq.cpp.o	ce8fbbb3f7d1b868
+15	5032	796681890	CMakeFiles/voice2note_whisper.dir/voice2note_whisper.cpp.o	d2e0d8559695f017
+1879	5060	796681890	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/binary-ops.cpp.o	1bef244469fb1fb1
+3708	5075	796681890	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/amx.cpp.o	30af0fb68b5daa70
+3991	5498	796681890	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/vec.cpp.o	f57271c17fb2fbc7
+60	5718	796681890	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-opt.cpp.o	403622a7205ce9d
+4046	5808	796681890	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/arm/quants.c.o	442ff26badfbaccb
+4028	5912	796681891	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/arm/repack.cpp.o	53ed301ab014f21d
+913	6095	796681891	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/repack.cpp.o	b406f6eec022aaa
+3512	6669	796681891	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/unary-ops.cpp.o	1e7ceb2fc95d2da9
+4124	7124	796681892	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ops.cpp.o	1b457c9a5b62a73f

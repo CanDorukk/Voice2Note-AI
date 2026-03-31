@@ -1,0 +1,3 @@
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/3c732m5w/arm64-v8a/_deps/ggml-subbuild/CMakeFiles/ggml-populate.dir
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/3c732m5w/arm64-v8a/_deps/ggml-subbuild/CMakeFiles/edit_cache.dir
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/3c732m5w/arm64-v8a/_deps/ggml-subbuild/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,11 @@
+# ninja log v5
+0	351	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-mkdir	f941212d89b860f3
+351	454	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-download	7066b909f7999095
+454	571	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-update	74a0004fadd03413
+571	680	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-patch	574c25cff6c96ed8
+680	782	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-configure	ad71c9ab6020bf44
+782	860	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-build	e52c11f5496961e1
+860	933	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-install	f75b141611da7617
+933	1028	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-test	8380196c70b6b470
+1028	1163	796681877	CMakeFiles/ggml-populate-complete	8e7d8a5f0fef7418
+1028	1163	796681877	ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-done	8e7d8a5f0fef7418

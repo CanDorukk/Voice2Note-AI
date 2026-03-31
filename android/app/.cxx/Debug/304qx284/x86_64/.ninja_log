@@ -1,0 +1,61 @@
+# ninja log v5
+75	169	796681993	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/hbm.cpp.o	36fbf863e23690bd
+16	268	796681993	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-alloc.c.o	8db3f3d804790f6f
+25	681	796681993	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.cpp.o	573443043270bb66
+9	759	796681993	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.c.o	917da5161db9d92f
+34	774	796681994	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-threading.cpp.o	edd2af6d2f1c3213
+12	982	796681994	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-backend.cpp.o	fae1115c1d5a042f
+89	1072	796681994	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/quants.c.o	bf9d75b8215a88f4
+56	1259	796681994	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.c.o	f4caa99c6e8bd002
+44	1329	796681994	_deps/ggml-build/src/CMakeFiles/ggml.dir/ggml-backend-dl.cpp.o	c3817909f194f06c
+30	1395	796681994	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-quants.c.o	ba6c19670931033e
+83	1413	796681994	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/traits.cpp.o	818490a5f873ac7f
+169	1592	796681994	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/mmq.cpp.o	74e14497ca6baddf
+62	1697	796681994	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.cpp.o	aa3b0aa0390ab279
+49	1728	796681994	_deps/ggml-build/src/CMakeFiles/ggml.dir/ggml-backend-reg.cpp.o	d2a38665cd347b08
+21	1747	796681995	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-opt.cpp.o	430b6fa0251db7e7
+1	1784	796681995	CMakeFiles/voice2note_whisper.dir/voice2note_whisper.cpp.o	3b2be1f251477a42
+1259	1871	796681995	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/x86/quants.c.o	9253d7ef867d9913
+760	1878	796681995	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/amx.cpp.o	25660a4f0256ba7c
+774	2021	796681995	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/vec.cpp.o	d29106b806296bc6
+682	2052	796681995	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/binary-ops.cpp.o	d9f3bdd55d6cb4e3
+982	2125	796681995	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/x86/repack.cpp.o	64163d6567b2e742
+68	2220	796681995	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/repack.cpp.o	fd9b5d9f7db942eb
+268	2282	796681995	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/unary-ops.cpp.o	4ca1d66db36b5a79
+39	2549	796681995	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/gguf.cpp.o	15081eedc7ba9ea2
+2549	2656	796681995	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/304qx284/obj/x86_64/libggml-base.so	4d1ba17ff83564a6
+1073	2834	796681996	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ops.cpp.o	489203c34fd69de4
+2834	2940	796681996	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/304qx284/obj/x86_64/libggml-cpu.so	ff00ced5385c010
+2940	3040	796681996	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/304qx284/obj/x86_64/libggml.so	d786eada47ea562a
+5	5758	796681998	CMakeFiles/voice2note_whisper.dir/third_party/whisper.cpp/src/whisper.cpp.o	a07f36a600f2978f
+5758	5904	796681999	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/304qx284/obj/x86_64/libvoice2note_whisper.so	bf0dbb5b665e89c9
+14	224	796682865	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-alloc.c.o	781dd0e55ee448f
+101	231	796682865	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/hbm.cpp.o	b86ab030c70b30fa
+27	626	796682865	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.cpp.o	68e7f647e09bd072
+11	749	796682865	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.c.o	e6a9e77a2b559086
+33	758	796682865	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-threading.cpp.o	8c265f441c13a096
+72	903	796682866	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.c.o	e5d8162b8985df72
+87	1085	796682866	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/quants.c.o	8b66c0588050d4e0
+38	1107	796682866	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-quants.c.o	80f2278fb2212a10
+18	1123	796682866	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-backend.cpp.o	4117a968e029a9de
+48	1208	796682866	_deps/ggml-build/src/CMakeFiles/ggml.dir/ggml-backend-dl.cpp.o	6ab061fe2b5d23d3
+224	1396	796682866	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/mmq.cpp.o	84c80b8ee0400754
+94	1525	796682866	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/traits.cpp.o	c8d5724139d736b
+63	1660	796682866	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ggml-cpu.cpp.o	3515fe3389ac2816
+3	1678	796682866	CMakeFiles/voice2note_whisper.dir/voice2note_whisper.cpp.o	840f01facb247e49
+231	1740	796682866	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/amx/amx.cpp.o	3ce339d764c8760b
+22	1751	796682866	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-opt.cpp.o	f27b5513d2388d81
+1086	1796	796682866	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/x86/quants.c.o	19fe37c04649b270
+54	1798	796682866	_deps/ggml-build/src/CMakeFiles/ggml.dir/ggml-backend-reg.cpp.o	ad6122f7810853de
+903	1934	796682867	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/vec.cpp.o	9a59663b81488153
+758	1935	796682867	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/arch/x86/repack.cpp.o	ddf20c4621a851de
+79	2100	796682867	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/repack.cpp.o	2b230e60bdd22caa
+749	2140	796682867	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/binary-ops.cpp.o	38f2e65b3d6734ca
+626	2290	796682867	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/unary-ops.cpp.o	c88ddb8a61b39ac2
+43	2513	796682867	_deps/ggml-build/src/CMakeFiles/ggml-base.dir/gguf.cpp.o	bdfb5aad313e4360
+2513	2581	796682867	_deps/ggml-build/src/libggml-base.a	289790a1dc9c991e
+1107	2774	796682867	_deps/ggml-build/src/CMakeFiles/ggml-cpu.dir/ggml-cpu/ops.cpp.o	76128ca182b94cad
+2774	2832	796682867	_deps/ggml-build/src/libggml-cpu.a	a19b80595525f863
+2832	2892	796682868	_deps/ggml-build/src/libggml.a	9592b4b08999589c
+7	5843	796682870	CMakeFiles/voice2note_whisper.dir/third_party/whisper.cpp/src/whisper.cpp.o	878d9b491e53eb69
+5843	5984	796682871	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/304qx284/obj/x86_64/libvoice2note_whisper.so	b20042c0cf8b8372

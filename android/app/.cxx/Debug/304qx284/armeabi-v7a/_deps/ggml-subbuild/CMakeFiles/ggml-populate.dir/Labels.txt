@@ -1,0 +1,14 @@
+# Target labels
+ ggml-populate
+# Source files and their labels
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/CMakeFiles/ggml-populate
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/CMakeFiles/ggml-populate.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/CMakeFiles/ggml-populate-complete.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-install.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-mkdir.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-download.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-update.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-patch.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-configure.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-build.rule
+F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/304qx284/armeabi-v7a/_deps/ggml-subbuild/ggml-populate-prefix/src/ggml-populate-stamp/ggml-populate-test.rule
