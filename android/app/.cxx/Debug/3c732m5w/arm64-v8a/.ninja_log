@@ -1,0 +1,5 @@
+# ninja log v5
+0	408	796602141	CMakeFiles/voice2note_whisper.dir/voice2note_whisper.cpp.o	f0856371b63abb24
+409	491	796602141	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/3c732m5w/obj/arm64-v8a/libvoice2note_whisper.so	2e874094f2e6ea60
+11	938	796679532	CMakeFiles/voice2note_whisper.dir/voice2note_whisper.cpp.o	f0856371b63abb24
+938	1155	796679533	F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/3c732m5w/obj/arm64-v8a/libvoice2note_whisper.so	2e874094f2e6ea60

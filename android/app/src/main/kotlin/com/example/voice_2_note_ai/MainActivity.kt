@@ -17,9 +17,14 @@ class MainActivity : FlutterActivity() {
                     val args = call.arguments as? Map<*, *>
                     val modelPath = args?.get("modelPath") as? String
                     val audioPath = args?.get("audioPath") as? String
-                    // Sonraki adım: whisper.cpp JNI ile gerçek transkript.
+                    val nativePing = try {
+                        WhisperNative.ping()
+                    } catch (e: Throwable) {
+                        "native ping failed: ${e.message}"
+                    }
+                    // Sonraki adım: whisper.cpp ile gerçek transkript (JNI).
                     result.success(
-                        "[Whisper stub] MethodChannel çalışıyor. " +
+                        "[Whisper stub] $nativePing | " +
                             "modelPath=${modelPath ?: "(null)"}, " +
                             "audioPath=${audioPath ?: "(null)"}",
                     )
