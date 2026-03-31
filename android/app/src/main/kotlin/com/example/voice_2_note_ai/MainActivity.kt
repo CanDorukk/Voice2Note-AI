@@ -17,17 +17,16 @@ class MainActivity : FlutterActivity() {
                     val args = call.arguments as? Map<*, *>
                     val modelPath = args?.get("modelPath") as? String
                     val audioPath = args?.get("audioPath") as? String
-                    val nativePing = try {
-                        WhisperNative.ping()
+                    val nativeResult = try {
+                        WhisperNative.transcribe(
+                            modelPath = modelPath,
+                            audioPath = audioPath,
+                        )
                     } catch (e: Throwable) {
-                        "native ping failed: ${e.message}"
+                        "[Whisper native stub] failed: ${e.message}"
                     }
                     // Sonraki adım: whisper.cpp ile gerçek transkript (JNI).
-                    result.success(
-                        "[Whisper stub] $nativePing | " +
-                            "modelPath=${modelPath ?: "(null)"}, " +
-                            "audioPath=${audioPath ?: "(null)"}",
-                    )
+                    result.success(nativeResult)
                 }
                 else -> result.notImplemented()
             }

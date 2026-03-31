@@ -11,4 +11,10 @@ object WhisperNative {
 
     @JvmStatic
     external fun ping(): String
+
+    @JvmStatic
+    external fun transcribe(
+        modelPath: String?,
+        audioPath: String?,
+    ): String
 }
