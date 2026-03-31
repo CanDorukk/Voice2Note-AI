@@ -5,6 +5,11 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
+
+#if VOICE2NOTE_HAS_WHISPER_CPP
+#include "whisper.h"
+#endif
 
 namespace {
 
@@ -40,6 +45,11 @@ struct WavInfo {
   int bits_per_sample = 0;
   int data_size = 0;
   std::string error;
+};
+
+struct WavData {
+  WavInfo info;
+  std::vector<float> pcm_f32;
 };
 
 WavInfo ReadWavInfo(const std::string &path) {
@@ -125,6 +135,120 @@ WavInfo ReadWavInfo(const std::string &path) {
 }
 
 jstring NativeTranscribe(JNIEnv *env, jclass /* clazz */, jstring model_path,
+                         jstring audio_path);
+
+WavData ReadWavData16BitMono(const std::string &path) {
+  WavData out;
+  out.info = ReadWavInfo(path);
+  if (!out.info.ok) {
+    return out;
+  }
+  if (out.info.bits_per_sample != 16) {
+    out.info.ok = false;
+    out.info.error = "yalnizca 16-bit PCM destekleniyor";
+    return out;
+  }
+
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    out.info.ok = false;
+    out.info.error = "wav acilamadi";
+    return out;
+  }
+
+  // data chunk konumunu tekrar bul.
+  in.ignore(12); // RIFF + size + WAVE
+  std::uint32_t data_size = 0;
+  while (in) {
+    char id[4] = {0};
+    std::uint32_t chunk_size = 0;
+    in.read(id, 4);
+    in.read(reinterpret_cast<char *>(&chunk_size), 4);
+    if (!in) break;
+
+    const std::string chunk_id(id, 4);
+    if (chunk_id == "data") {
+      data_size = chunk_size;
+      break;
+    }
+    in.ignore(static_cast<std::streamsize>(chunk_size));
+  }
+
+  if (data_size == 0) {
+    out.info.ok = false;
+    out.info.error = "data chunk bos";
+    return out;
+  }
+
+  const size_t samples = data_size / sizeof(std::int16_t);
+  std::vector<std::int16_t> pcm16(samples);
+  in.read(reinterpret_cast<char *>(pcm16.data()), static_cast<std::streamsize>(data_size));
+  if (!in) {
+    out.info.ok = false;
+    out.info.error = "pcm okunamadi";
+    return out;
+  }
+
+  out.pcm_f32.resize(samples);
+  for (size_t i = 0; i < samples; ++i) {
+    out.pcm_f32[i] = static_cast<float>(pcm16[i]) / 32768.0f;
+  }
+  return out;
+}
+
+#if VOICE2NOTE_HAS_WHISPER_CPP
+std::string TranscribeWithWhisperCpp(const std::string &model,
+                                     const std::string &audio) {
+  const WavData wav = ReadWavData16BitMono(audio);
+  if (!wav.info.ok) {
+    return "[Whisper native] wav parse hatasi: " + wav.info.error;
+  }
+  if (wav.info.sample_rate != 16000 || wav.info.channels != 1) {
+    std::ostringstream ss;
+    ss << "[Whisper native] wav format uygun degil. sr=" << wav.info.sample_rate
+       << ", ch=" << wav.info.channels << " (beklenen 16000/1)";
+    return ss.str();
+  }
+
+  whisper_context *ctx = whisper_init_from_file(model.c_str());
+  if (ctx == nullptr) {
+    return "[Whisper native] model yuklenemedi";
+  }
+
+  whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
+  params.print_progress = false;
+  params.print_realtime = false;
+  params.print_timestamps = false;
+  params.translate = false;
+  params.no_timestamps = true;
+  params.language = "tr";
+
+  const int code = whisper_full(ctx, params, wav.pcm_f32.data(),
+                                static_cast<int>(wav.pcm_f32.size()));
+  if (code != 0) {
+    whisper_free(ctx);
+    return "[Whisper native] whisper_full hata kodu: " + std::to_string(code);
+  }
+
+  std::string transcript;
+  const int n = whisper_full_n_segments(ctx);
+  for (int i = 0; i < n; ++i) {
+    const char *seg = whisper_full_get_segment_text(ctx, i);
+    if (seg != nullptr) {
+      if (!transcript.empty()) transcript += " ";
+      transcript += seg;
+    }
+  }
+  whisper_free(ctx);
+
+  if (transcript.empty()) {
+    return "[Whisper native] transkript bos";
+  }
+  return transcript;
+}
+#endif
+
+jstring NativeTranscribe(JNIEnv *env, jclass /* clazz */, jstring model_path,
                          jstring audio_path) {
   const std::string model = JStringToStdString(env, model_path);
   const std::string audio = JStringToStdString(env, audio_path);
@@ -164,6 +288,10 @@ jstring NativeTranscribe(JNIEnv *env, jclass /* clazz */, jstring model_path,
     return env->NewStringUTF(msg.c_str());
   }
 
+#if VOICE2NOTE_HAS_WHISPER_CPP
+  const std::string transcript = TranscribeWithWhisperCpp(model, audio);
+  return env->NewStringUTF(transcript.c_str());
+#else
   const bool whisper_friendly =
       wav.sample_rate == 16000 && wav.channels == 1 && wav.bits_per_sample == 16;
   std::ostringstream details;
@@ -175,6 +303,7 @@ jstring NativeTranscribe(JNIEnv *env, jclass /* clazz */, jstring model_path,
 
   const std::string response = details.str();
   return env->NewStringUTF(response.c_str());
+#endif
 }
 
 } // namespace

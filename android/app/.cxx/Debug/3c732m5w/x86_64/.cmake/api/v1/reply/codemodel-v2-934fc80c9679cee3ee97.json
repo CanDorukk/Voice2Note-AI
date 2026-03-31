@@ -38,7 +38,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "voice2note_whisper::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-voice2note_whisper-Debug-0afd77609d8e3f18fc2a.json",
+					"jsonFile" : "target-voice2note_whisper-Debug-5878fd04f871f6b11d2f.json",
 					"name" : "voice2note_whisper",
 					"projectIndex" : 0
 				}
@@ -48,7 +48,7 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/3c732m5w/armeabi-v7a",
+		"build" : "F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/.cxx/Debug/3c732m5w/x86_64",
 		"source" : "F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp"
 	},
 	"version" : 

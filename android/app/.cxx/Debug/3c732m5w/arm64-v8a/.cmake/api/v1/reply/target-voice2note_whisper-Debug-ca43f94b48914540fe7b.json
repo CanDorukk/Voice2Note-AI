@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/3c732m5w/obj/x86_64/libvoice2note_whisper.so"
+			"path" : "F:/Projelerim/Voice2Note AI/voice_2_note_ai/build/app/intermediates/cxx/Debug/3c732m5w/obj/arm64-v8a/libvoice2note_whisper.so"
 		}
 	],
 	"backtrace" : 1,
@@ -10,7 +10,8 @@
 	{
 		"commands" : 
 		[
-			"add_library"
+			"add_library",
+			"add_compile_definitions"
 		],
 		"files" : 
 		[
@@ -24,7 +25,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 4,
+				"line" : 21,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 18,
 				"parent" : 0
 			}
 		]
@@ -40,6 +47,10 @@
 			],
 			"defines" : 
 			[
+				{
+					"backtrace" : 2,
+					"define" : "VOICE2NOTE_HAS_WHISPER_CPP=0"
+				},
 				{
 					"define" : "voice2note_whisper_EXPORTS"
 				}

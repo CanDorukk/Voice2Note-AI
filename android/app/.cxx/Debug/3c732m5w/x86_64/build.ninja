@@ -44,7 +44,7 @@ include CMakeFiles/rules.ninja
 build cmake_object_order_depends_target_voice2note_whisper: phony || CMakeFiles/voice2note_whisper.dir
 
 build CMakeFiles/voice2note_whisper.dir/voice2note_whisper.cpp.o: CXX_COMPILER__voice2note_whisper_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/voice2note_whisper.cpp || cmake_object_order_depends_target_voice2note_whisper
-  DEFINES = -Dvoice2note_whisper_EXPORTS
+  DEFINES = -DVOICE2NOTE_HAS_WHISPER_CPP=0 -Dvoice2note_whisper_EXPORTS
   DEP_FILE = CMakeFiles\voice2note_whisper.dir\voice2note_whisper.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -std=c++17 -fno-exceptions -fno-rtti -fno-limit-debug-info  -fPIC
   OBJECT_DIR = CMakeFiles\voice2note_whisper.dir
