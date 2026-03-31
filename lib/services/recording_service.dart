@@ -28,12 +28,17 @@ class RecordingService {
     final tempDir = await getTemporaryDirectory();
     _tempPath = join(
       tempDir.path,
-      'note_${DateTime.now().millisecondsSinceEpoch}.m4a',
+      'note_${DateTime.now().millisecondsSinceEpoch}.wav',
     );
     if (kDebugMode) {
       debugPrint('RecordingService.start temp: $_tempPath');
     }
-    await _recorder.start(path: _tempPath!);
+    await _recorder.start(
+      path: _tempPath!,
+      encoder: AudioEncoder.wav,
+      samplingRate: 16000,
+      numChannels: 1,
+    );
     return true;
   }
 
