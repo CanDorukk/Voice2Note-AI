@@ -17,6 +17,10 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "warmup" -> {
                     val modelPath = call.arguments as? String
+                    if (modelPath.isNullOrBlank()) {
+                        result.error("BAD_ARGS", "modelPath eksik", null)
+                        return@setMethodCallHandler
+                    }
                     whisperExecutor.execute {
                         val nativeResult = try {
                             WhisperNative.warmup(modelPath)
@@ -33,6 +37,10 @@ class MainActivity : FlutterActivity() {
                     val args = call.arguments as? Map<*, *>
                     val modelPath = args?.get("modelPath") as? String
                     val audioPath = args?.get("audioPath") as? String
+                    if (modelPath.isNullOrBlank() || audioPath.isNullOrBlank()) {
+                        result.error("BAD_ARGS", "modelPath veya audioPath eksik", null)
+                        return@setMethodCallHandler
+                    }
                     whisperExecutor.execute {
                         val nativeResult = try {
                             WhisperNative.transcribe(

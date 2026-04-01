@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -12,6 +13,9 @@ import 'package:voice_2_note_ai/features/speech_to_text/whisper_platform_channel
 class WhisperService {
   static const MethodChannel _channel =
       MethodChannel(kWhisperMethodChannelName);
+
+  /// Native `whisper_full` takılırsa sonsuz bekleme yerine hata dönmek için üst sınır.
+  static const Duration transcribeTimeout = Duration(minutes: 15);
 
   /// Model dosyasını (varsa) belleğe yükler; ilk kayıttan önce arka planda çağrılabilir.
   Future<void> warmup() async {
@@ -42,18 +46,32 @@ class WhisperService {
       debugPrint('WhisperService: model path: $modelPath');
     }
 
+    if (modelPath == null || modelPath.isEmpty) {
+      if (kDebugMode) {
+        debugPrint('WhisperService: model dosyası yok (asset kurulumu kontrol edin).');
+      }
+      return _fallbackTranscript();
+    }
+
     if (Platform.isAndroid) {
       try {
-        final out = await _channel.invokeMethod<String>(
-          'transcribe',
-          <String, String?>{
-            'modelPath': modelPath,
-            'audioPath': audioPath,
-          },
-        );
+        final out = await _channel
+            .invokeMethod<String>(
+              'transcribe',
+              <String, String?>{
+                'modelPath': modelPath,
+                'audioPath': audioPath,
+              },
+            )
+            .timeout(transcribeTimeout);
         if (out != null && out.trim().isNotEmpty) {
           return out.trim();
         }
+      } on TimeoutException {
+        if (kDebugMode) {
+          debugPrint('WhisperService: transkript zaman aşımı (${transcribeTimeout.inMinutes} dk).');
+        }
+        return 'Transkript zaman aşımına uğradı. Daha kısa kayıt deneyin veya uygulamayı yeniden başlatın.';
       } on PlatformException catch (e, st) {
         if (kDebugMode) {
           debugPrint('WhisperService PlatformException: $e\n$st');

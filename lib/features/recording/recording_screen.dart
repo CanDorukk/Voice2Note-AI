@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voice_2_note_ai/services/speech_to_text_service.dart';
@@ -73,36 +74,56 @@ class RecordingScreen extends ConsumerWidget {
                                   final minVisibleUntil = DateTime.now().add(
                                     const Duration(seconds: 1),
                                   );
+                                  try {
+                                    setState(() => stepText = 'Transkript alınıyor...');
+                                    // İlk karede metnin görünmesi için kısa gecikme.
+                                    await Future<void>.delayed(const Duration(milliseconds: 250));
+                                    if (!context.mounted) return;
+                                    transcript = await stt.transcribe(audioPath: path);
 
-                                  setState(() => stepText = 'Transkript alınıyor...');
-                                  // İlk karede metnin görünmesi için kısa gecikme.
-                                  await Future<void>.delayed(const Duration(milliseconds: 250));
-                                  if (!context.mounted) return;
-                                  transcript = await stt.transcribe(audioPath: path);
+                                    if (!context.mounted) return;
+                                    setState(() => stepText = 'Özet hazırlanıyor...');
+                                    await Future<void>.delayed(const Duration(milliseconds: 150));
+                                    if (!context.mounted) return;
+                                    summary = await summarizer.summarize(transcript ?? '');
 
-                                  if (!context.mounted) return;
-                                  setState(() => stepText = 'Özet hazırlanıyor...');
-                                  await Future<void>.delayed(const Duration(milliseconds: 150));
-                                  if (!context.mounted) return;
-                                  summary = await summarizer.summarize(transcript ?? '');
+                                    if (!context.mounted) return;
+                                    await ref.read(noteRepositoryProvider).insert(
+                                          NoteModel(
+                                            audioPath: path,
+                                            transcript: transcript ?? '',
+                                            summary: summary ?? '',
+                                            duration: durationSeconds,
+                                            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                                          ),
+                                        );
 
-                                  await ref.read(noteRepositoryProvider).insert(
-                                        NoteModel(
-                                          audioPath: path,
-                                          transcript: transcript ?? '',
-                                          summary: summary ?? '',
-                                          duration: durationSeconds,
-                                          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-                                        ),
-                                      );
-
-                                  ref.invalidate(notesListProvider);
-
-                                  final now = DateTime.now();
-                                  if (now.isBefore(minVisibleUntil)) {
-                                    await Future<void>.delayed(minVisibleUntil.difference(now));
+                                    ref.invalidate(notesListProvider);
+                                  } catch (e, st) {
+                                    if (kDebugMode) {
+                                      debugPrint('RecordingScreen işleme hatası: $e\n$st');
+                                    }
+                                    transcript ??= 'İşlem tamamlanamadı.';
+                                    summary ??= '';
+                                    if (!context.mounted) return;
+                                    try {
+                                      await ref.read(noteRepositoryProvider).insert(
+                                            NoteModel(
+                                              audioPath: path,
+                                              transcript: transcript ?? '',
+                                              summary: summary ?? '',
+                                              duration: durationSeconds,
+                                              createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                                            ),
+                                          );
+                                      ref.invalidate(notesListProvider);
+                                    } catch (_) {}
+                                  } finally {
+                                    final now = DateTime.now();
+                                    if (now.isBefore(minVisibleUntil)) {
+                                      await Future<void>.delayed(minVisibleUntil.difference(now));
+                                    }
                                   }
-
                                   if (!context.mounted) return;
                                   if (navigator.canPop()) navigator.pop();
                                 });
