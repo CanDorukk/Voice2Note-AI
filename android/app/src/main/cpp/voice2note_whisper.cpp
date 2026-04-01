@@ -234,7 +234,12 @@ std::string LoadWhisperIfNeededLocked(const std::string &model_canonical) {
   }
   ReleaseCachedWhisperContext();
   const auto t0 = std::chrono::steady_clock::now();
-  g_whisper_ctx = whisper_init_from_file(model_canonical.c_str());
+  struct whisper_context_params cparams = whisper_context_default_params();
+#if defined(__ANDROID__)
+  cparams.use_gpu = false;
+#endif
+  g_whisper_ctx =
+      whisper_init_from_file_with_params(model_canonical.c_str(), cparams);
   const auto t1 = std::chrono::steady_clock::now();
   const auto init_ms =
       std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
