@@ -43,23 +43,43 @@ class NotesScreen extends ConsumerWidget {
         data: (notes) {
           if (notes.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.mic_none_rounded, size: 64, color: Theme.of(context).colorScheme.outline),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Henüz not yok',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Kayıt ekranı eklenecek.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.mic_none_rounded,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Henüz not yok',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sesli not için alttaki Kayıt düğmesine dokunun veya aşağıdan kayda başlayın.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (context) => const RecordingScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.mic_rounded),
+                      label: const Text('Ses kaydı'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
