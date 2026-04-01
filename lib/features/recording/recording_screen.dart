@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voice_2_note_ai/services/speech_to_text_service.dart';
 import 'package:voice_2_note_ai/services/summary_service.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
+import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/features/recording/recording_provider.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 
@@ -27,6 +28,9 @@ class RecordingScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ses kaydı'),
+        actions: const [
+          ThemeModeMenuButton(),
+        ],
       ),
       body: SafeArea(
         child: Padding(
