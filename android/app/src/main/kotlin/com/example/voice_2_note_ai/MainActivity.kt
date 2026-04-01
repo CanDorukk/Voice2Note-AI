@@ -3,8 +3,11 @@ package com.example.voice_2_note_ai
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
+    private val whisperExecutor = Executors.newSingleThreadExecutor()
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(
@@ -17,19 +20,28 @@ class MainActivity : FlutterActivity() {
                     val args = call.arguments as? Map<*, *>
                     val modelPath = args?.get("modelPath") as? String
                     val audioPath = args?.get("audioPath") as? String
-                    val nativeResult = try {
-                        WhisperNative.transcribe(
-                            modelPath = modelPath,
-                            audioPath = audioPath,
-                        )
-                    } catch (e: Throwable) {
-                        "Transkript alınamadı: ${e.message ?: "bilinmeyen hata"}"
+                    whisperExecutor.execute {
+                        val nativeResult = try {
+                            WhisperNative.transcribe(
+                                modelPath = modelPath,
+                                audioPath = audioPath,
+                            )
+                        } catch (e: Throwable) {
+                            "Transkript alınamadı: ${e.message ?: "bilinmeyen hata"}"
+                        }
+                        runOnUiThread {
+                            result.success(nativeResult)
+                        }
                     }
-                    result.success(nativeResult)
                 }
                 else -> result.notImplemented()
             }
         }
+    }
+
+    override fun onDestroy() {
+        whisperExecutor.shutdown()
+        super.onDestroy()
     }
 
     companion object {

@@ -1,6 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:voice_2_note_ai/features/summary/textrank_algorithm.dart';
 
+/// [compute] ile ayrı isolate'ta çalışır (uzun metinde UI thread'i yormasın).
+String _textrankSummarize(String transcript) {
+  return TextRankAlgorithm().summarize(transcript);
+}
+
 /// Summary servisi.
 ///
 class SummaryService {
@@ -9,9 +14,6 @@ class SummaryService {
       debugPrint('SummaryService.summarize transcript length: ${transcript.length}');
     }
 
-    // TextRank algoritması (offline, saf Dart).
-    final algo = TextRankAlgorithm();
-    final summary = algo.summarize(transcript);
-    return summary;
+    return compute(_textrankSummarize, transcript);
   }
 }
