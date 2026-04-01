@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/note_detail_screen.dart';
 import 'package:voice_2_note_ai/features/recording/recording_screen.dart';
@@ -32,17 +33,54 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     }).toList();
   }
 
+  Future<void> _showAbout(BuildContext context) async {
+    final info = await PackageInfo.fromPlatform();
+    if (!context.mounted) return;
+    showAboutDialog(
+      context: context,
+      applicationName: 'Voice2 Note AI',
+      applicationVersion: '${info.version} (${info.buildNumber})',
+      applicationLegalese: 'Çevrimdışı ses notları',
+      children: const [
+        Padding(
+          padding: EdgeInsets.only(top: 12),
+          child: Text(
+            'Ses kaydı, Whisper transkript ve özet bu cihazda çalışır; '
+            'internet zorunlu değildir.',
+          ),
+        ),
+      ],
+    );
+  }
+
+  PreferredSizeWidget _notesAppBar(
+    BuildContext context, {
+    PreferredSizeWidget? bottom,
+  }) {
+    return AppBar(
+      title: const Text('Notlar'),
+      bottom: bottom,
+      actions: [
+        IconButton(
+          tooltip: 'Hakkında',
+          icon: const Icon(Icons.info_outline_rounded),
+          onPressed: () => _showAbout(context),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final notesAsync = ref.watch(notesListProvider);
 
     return notesAsync.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Notlar')),
+        appBar: _notesAppBar(context),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (err, _) => Scaffold(
-        appBar: AppBar(title: const Text('Notlar')),
+        appBar: _notesAppBar(context),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -57,7 +95,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       data: (notes) {
         if (notes.isEmpty) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Notlar')),
+            appBar: _notesAppBar(context),
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () {
                 Navigator.of(context).push(
@@ -115,8 +153,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         final filtered = _filter(notes);
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Notlar'),
+          appBar: _notesAppBar(
+            context,
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(52),
               child: Padding(
