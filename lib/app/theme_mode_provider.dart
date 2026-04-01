@@ -11,17 +11,32 @@ class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
   @override
   Future<ThemeMode> build() async {
     final prefs = await SharedPreferences.getInstance();
-    return _decode(prefs.getString(_kThemeMode));
+    return themeModeFromPreference(prefs.getString(_kThemeMode));
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
     state = AsyncData(mode);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kThemeMode, _encode(mode));
+    await prefs.setString(_kThemeMode, themeModeToPreference(mode));
   }
 }
 
-String _encode(ThemeMode mode) {
+/// SharedPreferences `app_theme_mode` değerinden [ThemeMode] üretir.
+/// Bilinmeyen veya boş değerler [ThemeMode.system] olur.
+ThemeMode themeModeFromPreference(String? raw) {
+  switch (raw) {
+    case 'light':
+      return ThemeMode.light;
+    case 'dark':
+      return ThemeMode.dark;
+    case 'system':
+      return ThemeMode.system;
+    default:
+      return ThemeMode.system;
+  }
+}
+
+String themeModeToPreference(ThemeMode mode) {
   switch (mode) {
     case ThemeMode.light:
       return 'light';
@@ -29,16 +44,5 @@ String _encode(ThemeMode mode) {
       return 'dark';
     case ThemeMode.system:
       return 'system';
-  }
-}
-
-ThemeMode _decode(String? raw) {
-  switch (raw) {
-    case 'light':
-      return ThemeMode.light;
-    case 'dark':
-      return ThemeMode.dark;
-    default:
-      return ThemeMode.system;
   }
 }
