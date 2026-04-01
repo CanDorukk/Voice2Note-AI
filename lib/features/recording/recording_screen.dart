@@ -75,8 +75,7 @@ class RecordingScreen extends ConsumerWidget {
                                   );
 
                                   setState(() => stepText = 'Transkript alınıyor...');
-                                  // Stub servisler çok hızlı döndüğü için
-                                  // bu UI adımının gözükmesini sağlamak için kısa gecikme.
+                                  // İlk karede metnin görünmesi için kısa gecikme.
                                   await Future<void>.delayed(const Duration(milliseconds: 250));
                                   if (!context.mounted) return;
                                   transcript = await stt.transcribe(audioPath: path);
@@ -111,15 +110,30 @@ class RecordingScreen extends ConsumerWidget {
 
                               return AlertDialog(
                                 title: const Text('İşleniyor'),
-                                content: Row(
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const CircularProgressIndicator(),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Text(
-                                        stepText,
-                                        style: Theme.of(context).textTheme.bodyMedium,
-                                      ),
+                                    Row(
+                                      children: [
+                                        const CircularProgressIndicator(),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Text(
+                                            stepText,
+                                            style: Theme.of(context).textTheme.bodyMedium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Çevrimdışı transkript bu cihazda kayıt süresinin birkaç katı zaman alabilir.',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
                                     ),
                                   ],
                                 ),
