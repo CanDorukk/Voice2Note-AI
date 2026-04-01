@@ -1,5 +1,5 @@
 name: voice_2_note_ai
-description: "A new Flutter project."
+description: "Çevrimdışı ses kaydı, Whisper transkript ve özet notlar (Flutter)."
 publish_to: 'none'
 version: 0.1.0
 
