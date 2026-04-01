@@ -36,17 +36,32 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   Future<void> _showAbout(BuildContext context) async {
     final info = await PackageInfo.fromPlatform();
     if (!context.mounted) return;
+    final rootContext = context;
     showAboutDialog(
-      context: context,
+      context: rootContext,
       applicationName: 'Voice2 Note AI',
       applicationVersion: '${info.version} (${info.buildNumber})',
       applicationLegalese: 'Çevrimdışı ses notları',
-      children: const [
-        Padding(
+      children: [
+        const Padding(
           padding: EdgeInsets.only(top: 12),
           child: Text(
             'Ses kaydı, Whisper transkript ve özet bu cihazda çalışır; '
             'internet zorunlu değildir.',
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {
+              Navigator.of(rootContext).pop();
+              showLicensePage(
+                context: rootContext,
+                applicationName: 'Voice2 Note AI',
+                applicationVersion: '${info.version}+${info.buildNumber}',
+              );
+            },
+            child: const Text('Lisanslar'),
           ),
         ),
       ],
