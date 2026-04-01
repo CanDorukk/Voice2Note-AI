@@ -17,4 +17,8 @@ object WhisperNative {
         modelPath: String?,
         audioPath: String?,
     ): String
+
+    /** Modeli belleğe yükler; [transcribe] ile aynı önbelleği kullanır. */
+    @JvmStatic
+    external fun warmup(modelPath: String?): String
 }

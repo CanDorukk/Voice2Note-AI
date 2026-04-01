@@ -3,12 +3,21 @@
 #include <cctype>
 #include <cstdint>
 #include <fstream>
+#include <mutex>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #if VOICE2NOTE_HAS_WHISPER_CPP
+#include <android/log.h>
+#include <chrono>
+#include <cstdlib>
+#include <limits.h>
+
 #include "whisper.h"
+
+#define V2N_LOG_TAG "Voice2NoteWhisper"
 #endif
 
 namespace {
@@ -197,6 +206,48 @@ WavData ReadWavData16BitMono(const std::string &path) {
 }
 
 #if VOICE2NOTE_HAS_WHISPER_CPP
+std::mutex g_whisper_mutex;
+whisper_context *g_whisper_ctx = nullptr;
+std::string g_whisper_model_path;
+
+std::string CanonicalModelPath(const std::string &path) {
+  char buf[PATH_MAX];
+  if (realpath(path.c_str(), buf) != nullptr) {
+    return std::string(buf);
+  }
+  return path;
+}
+
+void ReleaseCachedWhisperContext() {
+  if (g_whisper_ctx != nullptr) {
+    whisper_free(g_whisper_ctx);
+    g_whisper_ctx = nullptr;
+  }
+  g_whisper_model_path.clear();
+}
+
+// Ön koşul: g_whisper_mutex tutuluyor.
+std::string LoadWhisperIfNeededLocked(const std::string &model_canonical) {
+  if (g_whisper_ctx != nullptr && g_whisper_model_path == model_canonical) {
+    __android_log_print(ANDROID_LOG_INFO, V2N_LOG_TAG, "whisper model cache HIT");
+    return "";
+  }
+  ReleaseCachedWhisperContext();
+  const auto t0 = std::chrono::steady_clock::now();
+  g_whisper_ctx = whisper_init_from_file(model_canonical.c_str());
+  const auto t1 = std::chrono::steady_clock::now();
+  const auto init_ms =
+      std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+  __android_log_print(ANDROID_LOG_INFO, V2N_LOG_TAG,
+                      "whisper model cache MISS init_ms=%lld",
+                      static_cast<long long>(init_ms));
+  if (g_whisper_ctx == nullptr) {
+    return "Model yüklenemedi. Uygulamayı yeniden başlatmayı deneyin.";
+  }
+  g_whisper_model_path = model_canonical;
+  return "";
+}
+
 std::string TranscribeWithWhisperCpp(const std::string &model,
                                      const std::string &audio) {
   const WavData wav = ReadWavData16BitMono(audio);
@@ -210,9 +261,13 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
     return ss.str();
   }
 
-  whisper_context *ctx = whisper_init_from_file(model.c_str());
-  if (ctx == nullptr) {
-    return "Model yüklenemedi. Uygulamayı yeniden başlatmayı deneyin.";
+  const std::string model_canon = CanonicalModelPath(model);
+
+  std::lock_guard<std::mutex> lock(g_whisper_mutex);
+
+  const std::string load_err = LoadWhisperIfNeededLocked(model_canon);
+  if (!load_err.empty()) {
+    return load_err;
   }
 
   whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
@@ -221,30 +276,70 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
   params.print_timestamps = false;
   params.translate = false;
   params.no_timestamps = true;
+  params.single_segment = true;
   params.language = "tr";
+  {
+    int n_threads = static_cast<int>(std::thread::hardware_concurrency());
+    if (n_threads < 1) {
+      n_threads = 1;
+    }
+    if (n_threads > 8) {
+      n_threads = 8;
+    }
+    params.n_threads = n_threads;
+  }
 
-  const int code = whisper_full(ctx, params, wav.pcm_f32.data(),
-                                static_cast<int>(wav.pcm_f32.size()));
+  const auto t_infer0 = std::chrono::steady_clock::now();
+  const int code =
+      whisper_full(g_whisper_ctx, params, wav.pcm_f32.data(),
+                   static_cast<int>(wav.pcm_f32.size()));
+  const auto t_infer1 = std::chrono::steady_clock::now();
+  const auto infer_ms =
+      std::chrono::duration_cast<std::chrono::milliseconds>(t_infer1 - t_infer0)
+          .count();
+  __android_log_print(ANDROID_LOG_INFO, V2N_LOG_TAG,
+                      "whisper_full infer_ms=%lld audio_samples=%d",
+                      static_cast<long long>(infer_ms),
+                      static_cast<int>(wav.pcm_f32.size()));
+
   if (code != 0) {
-    whisper_free(ctx);
     return "Konuşma metne çevrilemedi (kod " + std::to_string(code) + ").";
   }
 
   std::string transcript;
-  const int n = whisper_full_n_segments(ctx);
+  const int n = whisper_full_n_segments(g_whisper_ctx);
   for (int i = 0; i < n; ++i) {
-    const char *seg = whisper_full_get_segment_text(ctx, i);
+    const char *seg = whisper_full_get_segment_text(g_whisper_ctx, i);
     if (seg != nullptr) {
       if (!transcript.empty()) transcript += " ";
       transcript += seg;
     }
   }
-  whisper_free(ctx);
 
   if (transcript.empty()) {
     return "Konuşma algılanamadı. Daha net konuşup tekrar deneyin.";
   }
   return transcript;
+}
+
+jstring NativeWarmup(JNIEnv *env, jclass /* clazz */, jstring model_path_j) {
+  const std::string model_raw = JStringToStdString(env, model_path_j);
+  if (model_raw.empty() || !FileExists(model_raw)) {
+    return env->NewStringUTF("Model dosyası bulunamadı.");
+  }
+  const std::string model_canon = CanonicalModelPath(model_raw);
+  std::lock_guard<std::mutex> lock(g_whisper_mutex);
+  const std::string err = LoadWhisperIfNeededLocked(model_canon);
+  if (!err.empty()) {
+    return env->NewStringUTF(err.c_str());
+  }
+  return env->NewStringUTF("ok");
+}
+#endif
+
+#if !VOICE2NOTE_HAS_WHISPER_CPP
+jstring NativeWarmup(JNIEnv *env, jclass /* clazz */, jstring /* model_path_j */) {
+  return env->NewStringUTF("ok");
 }
 #endif
 
@@ -316,9 +411,11 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void * /* reserved */) 
        reinterpret_cast<void *>(NativePing)},
       {"transcribe", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
        reinterpret_cast<void *>(NativeTranscribe)},
+      {"warmup", "(Ljava/lang/String;)Ljava/lang/String;",
+       reinterpret_cast<void *>(NativeWarmup)},
   };
 
-  if (env->RegisterNatives(clazz, methods, 2) != 0) {
+  if (env->RegisterNatives(clazz, methods, 3) != 0) {
     return JNI_ERR;
   }
 

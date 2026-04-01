@@ -15,6 +15,19 @@ class MainActivity : FlutterActivity() {
             CHANNEL_WHISPER,
         ).setMethodCallHandler { call, result ->
             when (call.method) {
+                "warmup" -> {
+                    val modelPath = call.arguments as? String
+                    whisperExecutor.execute {
+                        val nativeResult = try {
+                            WhisperNative.warmup(modelPath)
+                        } catch (e: Throwable) {
+                            e.message ?: "warmup hata"
+                        }
+                        runOnUiThread {
+                            result.success(nativeResult)
+                        }
+                    }
+                }
                 "transcribe" -> {
                     @Suppress("UNCHECKED_CAST")
                     val args = call.arguments as? Map<*, *>

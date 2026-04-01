@@ -13,6 +13,24 @@ class WhisperService {
   static const MethodChannel _channel =
       MethodChannel(kWhisperMethodChannelName);
 
+  /// Model dosyasını (varsa) belleğe yükler; ilk kayıttan önce arka planda çağrılabilir.
+  Future<void> warmup() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+    final modelPath = await WhisperModelService.instance.ensureReady();
+    if (modelPath == null) {
+      return;
+    }
+    try {
+      await _channel.invokeMethod<String>('warmup', modelPath);
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('WhisperService.warmup: $e\n$st');
+      }
+    }
+  }
+
   /// [audioPath] bir dosya path'i veya MediaStore `content://` uri olabilir.
   Future<String> transcribe({required String audioPath}) async {
     if (kDebugMode) {
