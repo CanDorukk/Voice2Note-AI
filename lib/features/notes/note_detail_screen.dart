@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
 import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
@@ -147,6 +148,9 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Not ${widget.note.id ?? ''}'.trim()),
+        actions: const [
+          ThemeModeMenuButton(),
+        ],
       ),
       body: SafeArea(
         child: ListView(

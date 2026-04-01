@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/pdf_service.dart';
 
@@ -21,6 +22,9 @@ class PdfPreviewScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('PDF Önizleme (yakında)'),
+        actions: const [
+          ThemeModeMenuButton(),
+        ],
       ),
       body: SafeArea(
         child: ListView(

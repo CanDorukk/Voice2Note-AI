@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/pdf_service.dart';
 import 'package:share_plus/share_plus.dart';
@@ -21,6 +22,9 @@ class SharePreviewScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Paylaşım (yakında)'),
+        actions: const [
+          ThemeModeMenuButton(),
+        ],
       ),
       body: SafeArea(
         child: ListView(
