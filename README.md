@@ -25,6 +25,8 @@ flutter test
 flutter analyze
 ```
 
+Push ve pull request’lerde GitHub Actions aynı komutları çalıştırır (`.github/workflows/flutter_ci.yml`). Tam APK/NDK derlemesi CI’da yoktur.
+
 ## Platform notu
 
 Çevrimdışı Whisper şu an **Android** hedefi için yapılandırılmıştır; iOS tarafı bu aşamada öncelikli değildir.
