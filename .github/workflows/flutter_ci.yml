@@ -20,5 +20,10 @@ jobs:
           cache: true
 
       - run: flutter pub get
+
+      # pubspec'teki model asset yolu analiz için var olmalı; repo .gitignore'da *.bin tutar.
+      - name: Ensure GGML asset path exists for analyzer
+        run: mkdir -p assets/models && touch assets/models/ggml-tiny-q5_1.bin
+
       - run: flutter analyze
       - run: flutter test

@@ -9,7 +9,7 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 
 ## Model dosyası (Whisper)
 
-`assets/models/ggml-tiny-q5_1.bin` dosyasını [Hugging Face `ggerganov/whisper.cpp`](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden indirip `assets/models/` altına koyun. `*.bin` dosyaları `.gitignore` içindedir; repoda bulunmaz.
+`assets/models/ggml-tiny-q5_1.bin` dosyasını [Hugging Face `ggerganov/whisper.cpp`](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden indirip `assets/models/` altına koyun. `*.bin` repoda yok (`.gitignore`); analiz uyarısı `analysis_options.yaml` ile kapatıldı, CI’da boş dosya oluşturulur. **Uygulamayı çalıştırmak için** gerçek model dosyası şarttır.
 
 ## Çalıştırma
 

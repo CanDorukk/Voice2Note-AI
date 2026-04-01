@@ -5,32 +5,45 @@ import 'package:voice_2_note_ai/features/notes/note_detail_screen.dart';
 import 'package:voice_2_note_ai/features/recording/recording_screen.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 
-/// Not listesi ekranı. DB'den notları çeker; boşsa boş durum gösterir.
-class NotesScreen extends ConsumerWidget {
+/// Not listesi ekranı. DB'den notları çeker; boşsa boş durum; arama transkript/özet içinde.
+class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotesScreen> createState() => _NotesScreenState();
+}
+
+class _NotesScreenState extends ConsumerState<NotesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<NoteModel> _filter(List<NoteModel> notes) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return notes;
+    return notes.where((n) {
+      return n.transcript.toLowerCase().contains(q) ||
+          n.summary.toLowerCase().contains(q);
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final notesAsync = ref.watch(notesListProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notlar'),
+    return notesAsync.when(
+      loading: () => Scaffold(
+        appBar: AppBar(title: const Text('Notlar')),
+        body: const Center(child: CircularProgressIndicator()),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (context) => const RecordingScreen(),
-            ),
-          );
-        },
-        icon: const Icon(Icons.mic_rounded),
-        label: const Text('Kayıt'),
-      ),
-      body: notesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(
+      error: (err, _) => Scaffold(
+        appBar: AppBar(title: const Text('Notlar')),
+        body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -40,9 +53,23 @@ class NotesScreen extends ConsumerWidget {
             ],
           ),
         ),
-        data: (notes) {
-          if (notes.isEmpty) {
-            return Center(
+      ),
+      data: (notes) {
+        if (notes.isEmpty) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Notlar')),
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const RecordingScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.mic_rounded),
+              label: const Text('Kayıt'),
+            ),
+            body: Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Column(
@@ -81,21 +108,81 @@ class NotesScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () => ref.refresh(notesListProvider.future),
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: notes.length,
-              itemBuilder: (context, index) {
-                final note = notes[index];
-                return _NoteListTile(note: note);
-              },
             ),
           );
-        },
-      ),
+        }
+
+        final filtered = _filter(notes);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Notlar'),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(52),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Transkript veya özette ara',
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _query.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _query = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    isDense: true,
+                  ),
+                  onChanged: (v) => setState(() => _query = v),
+                ),
+              ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const RecordingScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.mic_rounded),
+            label: const Text('Kayıt'),
+          ),
+          body: filtered.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      'Bu aramaya uygun not yok.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: () => ref.refresh(notesListProvider.future),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final note = filtered[index];
+                      return _NoteListTile(note: note);
+                    },
+                  ),
+                ),
+        );
+      },
     );
   }
 }
