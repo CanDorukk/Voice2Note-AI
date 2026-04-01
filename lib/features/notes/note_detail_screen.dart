@@ -6,12 +6,7 @@ import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
 import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
 
-/// Tek bir notun detay ekranı (UI iskeleti).
-///
-/// Şimdilik amaç:
-/// - transcript ve summary'ı göstermek
-/// - Oynatmayı (just_audio) fonksiyonel hale getirmek
-/// - PDF/Paylaşım fonksiyonelliği sonraki adımda
+/// Tek bir notun detay ekranı: transkript, özet, ses oynatma, PDF, paylaşım.
 class NoteDetailScreen extends StatefulWidget {
   const NoteDetailScreen({
     super.key,
@@ -85,12 +80,11 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
   }
 
   Future<void> _togglePlay() async {
-    // Playback only supports file paths for now.
-    final audioPath = widget.note.audioPath;
-    if (audioPath.startsWith('content://')) {
+    final audioPath = widget.note.audioPath.trim();
+    if (audioPath.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Oynatma (content URI) yakında')),
+        const SnackBar(content: Text('Ses dosyası yolu yok.')),
       );
       return;
     }
@@ -98,7 +92,13 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     try {
       if (_loadedPath != audioPath) {
         await _player.stop();
-        await _player.setFilePath(audioPath);
+        if (audioPath.startsWith('content://')) {
+          await _player.setAudioSource(
+            AudioSource.uri(Uri.parse(audioPath)),
+          );
+        } else {
+          await _player.setFilePath(audioPath);
+        }
         _loadedPath = audioPath;
       }
 
@@ -172,12 +172,6 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
             _ActionsPlaceholder(
               note: widget.note,
               onPlay: _togglePlay,
-            ),
-            Text(
-              'Audio: ${widget.note.audioPath}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
             ),
           ],
         ),
