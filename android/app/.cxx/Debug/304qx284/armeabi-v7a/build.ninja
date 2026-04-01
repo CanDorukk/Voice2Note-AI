@@ -264,7 +264,7 @@ build _deps/ggml-build/src/edit_cache: phony _deps/ggml-build/src/CMakeFiles/edi
 build cmake_object_order_depends_target_ggml-base: phony || _deps/ggml-build/src/CMakeFiles/ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.c.o: C_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/ggml.c || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\ggml.c.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -Wshadow -Wstrict-prototypes -Wpointer-arith -Wmissing-prototypes -Werror=implicit-int -Werror=implicit-function-declaration -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wdouble-promotion -pthread -std=gnu11
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"
@@ -272,7 +272,7 @@ build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.c.o: C_COMPILER__ggml-b
   OBJECT_FILE_DIR = _deps\ggml-build\src\CMakeFiles\ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.cpp.o: CXX_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/ggml.cpp || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\ggml.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -std=c++17 -fno-limit-debug-info  -fPIC -Wmissing-declarations -Wmissing-noreturn -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wmissing-prototypes -Wextra-semi -pthread -std=gnu++17
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"
@@ -280,7 +280,7 @@ build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml.cpp.o: CXX_COMPILER__gg
   OBJECT_FILE_DIR = _deps\ggml-build\src\CMakeFiles\ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-alloc.c.o: C_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/ggml-alloc.c || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\ggml-alloc.c.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -Wshadow -Wstrict-prototypes -Wpointer-arith -Wmissing-prototypes -Werror=implicit-int -Werror=implicit-function-declaration -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wdouble-promotion -pthread -std=gnu11
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"
@@ -288,7 +288,7 @@ build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-alloc.c.o: C_COMPILER__
   OBJECT_FILE_DIR = _deps\ggml-build\src\CMakeFiles\ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-backend.cpp.o: CXX_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/ggml-backend.cpp || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\ggml-backend.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -std=c++17 -fno-limit-debug-info  -fPIC -Wmissing-declarations -Wmissing-noreturn -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wmissing-prototypes -Wextra-semi -pthread -std=gnu++17
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"
@@ -296,7 +296,7 @@ build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-backend.cpp.o: CXX_COMP
   OBJECT_FILE_DIR = _deps\ggml-build\src\CMakeFiles\ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-opt.cpp.o: CXX_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/ggml-opt.cpp || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\ggml-opt.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -std=c++17 -fno-limit-debug-info  -fPIC -Wmissing-declarations -Wmissing-noreturn -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wmissing-prototypes -Wextra-semi -pthread -std=gnu++17
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"
@@ -304,7 +304,7 @@ build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-opt.cpp.o: CXX_COMPILER
   OBJECT_FILE_DIR = _deps\ggml-build\src\CMakeFiles\ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-threading.cpp.o: CXX_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/ggml-threading.cpp || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\ggml-threading.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -std=c++17 -fno-limit-debug-info  -fPIC -Wmissing-declarations -Wmissing-noreturn -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wmissing-prototypes -Wextra-semi -pthread -std=gnu++17
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"
@@ -312,7 +312,7 @@ build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-threading.cpp.o: CXX_CO
   OBJECT_FILE_DIR = _deps\ggml-build\src\CMakeFiles\ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-quants.c.o: C_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/ggml-quants.c || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\ggml-quants.c.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -Wshadow -Wstrict-prototypes -Wpointer-arith -Wmissing-prototypes -Werror=implicit-int -Werror=implicit-function-declaration -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wdouble-promotion -pthread -std=gnu11
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"
@@ -320,7 +320,7 @@ build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/ggml-quants.c.o: C_COMPILER_
   OBJECT_FILE_DIR = _deps\ggml-build\src\CMakeFiles\ggml-base.dir
 
 build _deps/ggml-build/src/CMakeFiles/ggml-base.dir/gguf.cpp.o: CXX_COMPILER__ggml-base_Debug F$:/Projelerim/Voice2Note$ AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/gguf.cpp || cmake_object_order_depends_target_ggml-base
-  DEFINES = -DGGML_COMMIT=\"abc0b42\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
+  DEFINES = -DGGML_COMMIT=\"b95b1dd\" -DGGML_SCHED_MAX_COPIES=4 -DGGML_VERSION=\"0.9.8\" -D_GNU_SOURCE -D_XOPEN_SOURCE=600
   DEP_FILE = _deps\ggml-build\src\CMakeFiles\ggml-base.dir\gguf.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -std=c++17 -fno-limit-debug-info  -fPIC -Wmissing-declarations -Wmissing-noreturn -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wmissing-prototypes -Wextra-semi -pthread -std=gnu++17
   INCLUDES = -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/." -I"F:/Projelerim/Voice2Note AI/voice_2_note_ai/android/app/src/main/cpp/third_party/whisper.cpp/ggml/src/../include"

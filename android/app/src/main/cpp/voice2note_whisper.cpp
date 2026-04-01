@@ -201,18 +201,18 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
                                      const std::string &audio) {
   const WavData wav = ReadWavData16BitMono(audio);
   if (!wav.info.ok) {
-    return "[Whisper native] wav parse hatasi: " + wav.info.error;
+    return std::string("Ses dosyası okunamadı: ") + wav.info.error;
   }
   if (wav.info.sample_rate != 16000 || wav.info.channels != 1) {
     std::ostringstream ss;
-    ss << "[Whisper native] wav format uygun degil. sr=" << wav.info.sample_rate
-       << ", ch=" << wav.info.channels << " (beklenen 16000/1)";
+    ss << "Ses formatı uygun değil (16 kHz mono WAV gerekli). sr="
+       << wav.info.sample_rate << ", kanal=" << wav.info.channels;
     return ss.str();
   }
 
   whisper_context *ctx = whisper_init_from_file(model.c_str());
   if (ctx == nullptr) {
-    return "[Whisper native] model yuklenemedi";
+    return "Model yüklenemedi. Uygulamayı yeniden başlatmayı deneyin.";
   }
 
   whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
@@ -227,7 +227,7 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
                                 static_cast<int>(wav.pcm_f32.size()));
   if (code != 0) {
     whisper_free(ctx);
-    return "[Whisper native] whisper_full hata kodu: " + std::to_string(code);
+    return "Konuşma metne çevrilemedi (kod " + std::to_string(code) + ").";
   }
 
   std::string transcript;
@@ -242,7 +242,7 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
   whisper_free(ctx);
 
   if (transcript.empty()) {
-    return "[Whisper native] transkript bos";
+    return "Konuşma algılanamadı. Daha net konuşup tekrar deneyin.";
   }
   return transcript;
 }
@@ -263,28 +263,23 @@ jstring NativeTranscribe(JNIEnv *env, jclass /* clazz */, jstring model_path,
                       audio_lower.rfind(".wav") == audio_lower.size() - 4;
   if (!is_wav) {
     const std::string not_ready =
-        "[Whisper native stub] input wav degil. Once m4a->wav donusumu gerekli. "
-        "audioPath=" +
-        audio;
+        "Ses dosyası WAV olmalı. Kayıt ayarlarını kontrol edin.";
     return env->NewStringUTF(not_ready.c_str());
   }
 
   if (!FileExists(model)) {
-    const std::string msg =
-        "[Whisper native stub] model dosyasi bulunamadi. modelPath=" + model;
+    const std::string msg = "Model dosyası bulunamadı. Uygulamayı yeniden başlatın.";
     return env->NewStringUTF(msg.c_str());
   }
   if (!FileExists(audio)) {
-    const std::string msg =
-        "[Whisper native stub] audio dosyasi bulunamadi. audioPath=" + audio;
+    const std::string msg = "Ses dosyası bulunamadı.";
     return env->NewStringUTF(msg.c_str());
   }
 
   const WavInfo wav = ReadWavInfo(audio);
   if (!wav.ok) {
     const std::string msg =
-        "[Whisper native stub] wav parse hatasi: " + wav.error +
-        ". audioPath=" + audio;
+        std::string("Ses dosyası geçersiz: ") + wav.error;
     return env->NewStringUTF(msg.c_str());
   }
 
@@ -292,14 +287,10 @@ jstring NativeTranscribe(JNIEnv *env, jclass /* clazz */, jstring model_path,
   const std::string transcript = TranscribeWithWhisperCpp(model, audio);
   return env->NewStringUTF(transcript.c_str());
 #else
-  const bool whisper_friendly =
-      wav.sample_rate == 16000 && wav.channels == 1 && wav.bits_per_sample == 16;
   std::ostringstream details;
-  details << "[Whisper native stub] JNI transcribe ok (wav accepted). "
+  details << "Çevrimdışı transkript henüz bu derlemede yok (stub). "
           << "sr=" << wav.sample_rate << ", ch=" << wav.channels
-          << ", bits=" << wav.bits_per_sample << ", bytes=" << wav.data_size
-          << ", whisper_ready=" << (whisper_friendly ? "yes" : "no")
-          << ". modelPath=" << model << ", audioPath=" << audio;
+          << ", bits=" << wav.bits_per_sample;
 
   const std::string response = details.str();
   return env->NewStringUTF(response.c_str());

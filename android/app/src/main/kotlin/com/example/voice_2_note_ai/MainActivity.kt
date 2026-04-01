@@ -23,9 +23,8 @@ class MainActivity : FlutterActivity() {
                             audioPath = audioPath,
                         )
                     } catch (e: Throwable) {
-                        "[Whisper native stub] failed: ${e.message}"
+                        "Transkript alınamadı: ${e.message ?: "bilinmeyen hata"}"
                     }
-                    // Sonraki adım: whisper.cpp ile gerçek transkript (JNI).
                     result.success(nativeResult)
                 }
                 else -> result.notImplemented()

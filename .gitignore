@@ -42,6 +42,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Android NDK / CMake (yerel derleme; commit etme)
+android/app/.cxx/
+
 # Cursor specific
 
 /cursor
@@ -69,3 +72,6 @@ google-services.json
 
 # Whisper GGML model (büyük; yerel olarak assets/models/ içine kopyala, commit etme)
 assets/models/*.bin
+
+# whisper.cpp kaynak ağacı (çok büyük; repo dışı kopya/submodule kullanıyorsan aç)
+# android/app/src/main/cpp/third_party/whisper.cpp/

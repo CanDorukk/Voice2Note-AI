@@ -8,8 +8,7 @@ import 'package:voice_2_note_ai/features/speech_to_text/whisper_platform_channel
 
 /// Whisper offline speech-to-text servisi.
 ///
-/// Android: [MethodChannel] ile native tarafa iletilir (şimdilik stub yanıt).
-/// Gerçek whisper.cpp inference sonraki adımda native tarafta bağlanacak.
+/// Android: [MethodChannel] ile native `whisper.cpp` transkripti çalışır.
 class WhisperService {
   static const MethodChannel _channel =
       MethodChannel(kWhisperMethodChannelName);
@@ -52,12 +51,7 @@ class WhisperService {
   }
 
   String _fallbackTranscript() {
-    return [
-      'Bu kayıt sırasında uygulamanın tamamen çevrimdışı çalışması hedefleniyor.',
-      'Önce ses notu kaydediliyor, ardından konuşma metne çevriliyor.',
-      'Son olarak içerikten önemli cümleler seçilip kısa bir özet oluşturuluyor.',
-      'Whisper native köprüsü hazır değilse bu metin kullanılır.'
-    ].join(' ');
+    return 'Transkript alınamadı. Uygulamayı yeniden başlatıp tekrar deneyin.';
   }
 }
 
