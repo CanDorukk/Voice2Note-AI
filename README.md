@@ -2,6 +2,12 @@
 
 Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (TextRank) → SQLite notlar.
 
+## Özellikler (özet)
+
+- **Tema:** Sistem, açık veya koyu; tercih cihazda saklanır ve ana ekranlarda menüden değiştirilebilir.
+- **Notlar:** Liste; transkript ve özet metninde arama; detayda metin kopyalama, ses oynatma, PDF ve paylaşım akışları (önizleme ekranları mevcut).
+- **Hakkında:** Uygulama sürümü ve `showLicensePage` ile lisanslar; ilk açılış tanıtım ekranında sürüm satırı.
+
 ## Gereksinimler
 
 - Flutter SDK (pubspec içindeki sürüm aralığı)
