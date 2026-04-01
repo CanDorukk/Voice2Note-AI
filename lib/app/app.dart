@@ -11,6 +11,8 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'Voice2 Note AI',
       theme: appTheme,
+      darkTheme: appDarkTheme,
+      themeMode: ThemeMode.system,
       home: const InitialScreen(),
     );
   }
