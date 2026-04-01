@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
@@ -143,6 +144,21 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
             _SectionCard(
               title: 'Transcript',
               icon: Icons.mic_none_rounded,
+              titleAction: widget.note.transcript.trim().isEmpty
+                  ? null
+                  : IconButton(
+                      tooltip: 'Transkripti kopyala',
+                      icon: const Icon(Icons.copy_rounded, size: 22),
+                      onPressed: () async {
+                        await Clipboard.setData(
+                          ClipboardData(text: widget.note.transcript),
+                        );
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Transkript kopyalandı')),
+                        );
+                      },
+                    ),
               child: Text(
                 widget.note.transcript.trim().isEmpty
                     ? 'Transcript henüz hazır değil.'
@@ -311,11 +327,13 @@ class _SectionCard extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.child,
+    this.titleAction,
   });
 
   final String title;
   final IconData icon;
   final Widget child;
+  final Widget? titleAction;
 
   @override
   Widget build(BuildContext context) {
@@ -330,10 +348,13 @@ class _SectionCard extends StatelessWidget {
               children: [
                 Icon(icon, size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
+                if (titleAction != null) titleAction!,
               ],
             ),
             const SizedBox(height: 10),
