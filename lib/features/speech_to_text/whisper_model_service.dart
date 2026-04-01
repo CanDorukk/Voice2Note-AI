@@ -5,7 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-/// `ggml-tiny.bin` dosyasını asset'ten uygulama dizinine bir kez kopyalar.
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_constants.dart';
+
+/// `ggml-tiny.bin` dosyasını asset'ten uygulama dizinine kopyalar.
+///
+/// Diskteki dosya çok küçükse (bozuk/kısmi kopya) silinip asset'ten yeniden yazılır.
 ///
 /// Yerel geliştirme: `assets/models/ggml-tiny.bin` dosyasını kendi makinenize kopyalayın
 /// (Git'e eklenmez; `.gitignore` içindedir).
@@ -26,9 +30,25 @@ class WhisperModelService {
         p.join(base.path, _diskRelativeDir, _diskFileName),
       );
 
+      Future<void> removeIfInvalid() async {
+        if (!await target.exists()) return;
+        final len = await target.length();
+        if (len >= kWhisperGgmlTinyMinBytes) return;
+        if (kDebugMode) {
+          debugPrint(
+            'WhisperModelService: model geçersiz boyut ($len byte), yeniden kopyalanacak',
+          );
+        }
+        try {
+          await target.delete();
+        } catch (_) {}
+      }
+
+      await removeIfInvalid();
+
       if (await target.exists()) {
         final len = await target.length();
-        if (len > 0) {
+        if (len >= kWhisperGgmlTinyMinBytes) {
           if (kDebugMode) {
             debugPrint(
               'WhisperModelService: mevcut model ${target.path} ($len byte)',
@@ -41,10 +61,25 @@ class WhisperModelService {
       await target.parent.create(recursive: true);
       final data = await rootBundle.load(_assetPath);
       final bytes = data.buffer.asUint8List();
+      if (bytes.length < kWhisperGgmlTinyMinBytes) {
+        if (kDebugMode) {
+          debugPrint(
+            'WhisperModelService: asset model çok küçük (${bytes.length} byte)',
+          );
+        }
+        return null;
+      }
       await target.writeAsBytes(bytes, flush: true);
+      final written = await target.length();
+      if (written < kWhisperGgmlTinyMinBytes) {
+        try {
+          await target.delete();
+        } catch (_) {}
+        return null;
+      }
       if (kDebugMode) {
         debugPrint(
-          'WhisperModelService: asset kopyalandı ${target.path} (${bytes.length} byte)',
+          'WhisperModelService: asset kopyalandı ${target.path} ($written byte)',
         );
       }
       return target.path;
