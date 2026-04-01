@@ -122,6 +122,22 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     await _player.seek(Duration(milliseconds: ms));
   }
 
+  /// Transkript/özet başlığında kopyala ikonu; metin boşsa null.
+  Widget? _copyTitleAction(String text, String tooltip, String snackMessage) {
+    if (text.trim().isEmpty) return null;
+    return IconButton(
+      tooltip: tooltip,
+      icon: const Icon(Icons.copy_rounded, size: 22),
+      onPressed: () async {
+        await Clipboard.setData(ClipboardData(text: text));
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(snackMessage)),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final createdAt =
@@ -144,21 +160,11 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
             _SectionCard(
               title: 'Transcript',
               icon: Icons.mic_none_rounded,
-              titleAction: widget.note.transcript.trim().isEmpty
-                  ? null
-                  : IconButton(
-                      tooltip: 'Transkripti kopyala',
-                      icon: const Icon(Icons.copy_rounded, size: 22),
-                      onPressed: () async {
-                        await Clipboard.setData(
-                          ClipboardData(text: widget.note.transcript),
-                        );
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Transkript kopyalandı')),
-                        );
-                      },
-                    ),
+              titleAction: _copyTitleAction(
+                widget.note.transcript,
+                'Transkripti kopyala',
+                'Transkript kopyalandı',
+              ),
               child: Text(
                 widget.note.transcript.trim().isEmpty
                     ? 'Transcript henüz hazır değil.'
@@ -169,6 +175,11 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
             _SectionCard(
               title: 'Özet',
               icon: Icons.lightbulb_outline_rounded,
+              titleAction: _copyTitleAction(
+                widget.note.summary,
+                'Özeti kopyala',
+                'Özet kopyalandı',
+              ),
               child: Text(
                 widget.note.summary.trim().isEmpty
                     ? 'Özet henüz hazır değil.'
