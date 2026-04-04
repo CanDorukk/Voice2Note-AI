@@ -1,13 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/pdf_service.dart';
 
-/// PDF preview ekranı (UI iskeleti).
-///
-/// Bu adımda gerçek PDF üretimi yapılmıyor; transcript/summary gösteriliyor.
+/// PDF önizleme ve dosyaya kaydetme.
 class PdfPreviewScreen extends StatelessWidget {
   const PdfPreviewScreen({
     super.key,
@@ -21,7 +20,7 @@ class PdfPreviewScreen extends StatelessWidget {
     final pdfService = PdfService();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PDF Önizleme (yakında)'),
+        title: const Text('PDF'),
         actions: const [
           ThemeModeMenuButton(),
         ],
@@ -48,20 +47,18 @@ class PdfPreviewScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            Card(
-              elevation: 0,
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: const Padding(
-                padding: EdgeInsets.all(14),
-                child: Text(
-                  'Gerçek PDF üretimi bir sonraki adımda eklenecek.',
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: () async {
-                // UI: üretim işlemini başlat.
+                await Printing.layoutPdf(
+                  onLayout: (_) => pdfService.buildNotePdfBytes(note),
+                );
+              },
+              icon: const Icon(Icons.visibility_rounded),
+              label: const Text('Önizle ve yazdır'),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: () async {
                 final scaffold = ScaffoldMessenger.of(context);
                 scaffold.clearSnackBars();
 
@@ -76,7 +73,7 @@ class PdfPreviewScreen extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.picture_as_pdf_rounded),
-              label: const Text('PDF oluştur'),
+              label: const Text('PDF dosyası oluştur'),
             ),
           ],
         ),

@@ -26,6 +26,22 @@ class SqliteNoteRepository implements NoteRepository {
   }
 
   @override
+  Future<int> update(NoteModel note) async {
+    final id = note.id;
+    if (id == null) return 0;
+    final db = _helper.db;
+    if (db == null) return 0;
+    final map = note.toMap();
+    map.remove(NoteModel.colId);
+    return db.update(
+      NoteModel.tableName,
+      map,
+      where: '${NoteModel.colId} = ?',
+      whereArgs: [id],
+    );
+  }
+
+  @override
   Future<NoteModel?> getById(int id) async {
     final db = _helper.db;
     if (db == null) return null;

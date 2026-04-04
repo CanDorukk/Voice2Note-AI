@@ -2,14 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
-import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
+import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
+import 'package:voice_2_note_ai/models/note_model.dart';
 
 /// Tek bir notun detay ekranı: transkript, özet, ses oynatma, PDF, paylaşım.
-class NoteDetailScreen extends StatefulWidget {
+class NoteDetailScreen extends ConsumerStatefulWidget {
   const NoteDetailScreen({
     super.key,
     required this.note,
@@ -18,10 +20,15 @@ class NoteDetailScreen extends StatefulWidget {
   final NoteModel note;
 
   @override
-  State<NoteDetailScreen> createState() => _NoteDetailScreenState();
+  ConsumerState<NoteDetailScreen> createState() => _NoteDetailScreenState();
 }
 
-class _NoteDetailScreenState extends State<NoteDetailScreen> {
+class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
+  late NoteModel _note;
+  late TextEditingController _transcriptController;
+  late TextEditingController _summaryController;
+  bool _editing = false;
+
   final AudioPlayer _player = AudioPlayer();
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
@@ -37,6 +44,9 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _note = widget.note;
+    _transcriptController = TextEditingController(text: _note.transcript);
+    _summaryController = TextEditingController(text: _note.summary);
 
     _positionSub = _player.positionStream.listen((d) {
       if (!mounted) return;
@@ -67,6 +77,8 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
 
   @override
   void dispose() {
+    _transcriptController.dispose();
+    _summaryController.dispose();
     _positionSub?.cancel();
     _durationSub?.cancel();
     _playerStateSub?.cancel();
@@ -81,8 +93,46 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  Future<void> _saveEdits() async {
+    final id = _note.id;
+    if (id == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bu not kayıtlı değil; düzenlenemez.')),
+      );
+      return;
+    }
+
+    final updated = NoteModel(
+      id: id,
+      audioPath: _note.audioPath,
+      transcript: _transcriptController.text,
+      summary: _summaryController.text,
+      duration: _note.duration,
+      createdAt: _note.createdAt,
+    );
+
+    final rows = await ref.read(noteRepositoryProvider).update(updated);
+    if (!mounted) return;
+    if (rows == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kaydedilemedi.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _note = updated;
+      _editing = false;
+    });
+    ref.invalidate(notesListProvider);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Not güncellendi')),
+    );
+  }
+
   Future<void> _togglePlay() async {
-    final audioPath = widget.note.audioPath.trim();
+    final audioPath = _note.audioPath.trim();
     if (audioPath.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,14 +192,43 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final createdAt =
-        DateTime.fromMillisecondsSinceEpoch(widget.note.createdAt * 1000);
+        DateTime.fromMillisecondsSinceEpoch(_note.createdAt * 1000);
     final dateStr = '${createdAt.day}.${createdAt.month}.${createdAt.year}';
+
+    final transcriptCopy =
+        _editing ? _transcriptController.text : _note.transcript;
+    final summaryCopy = _editing ? _summaryController.text : _note.summary;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Not ${widget.note.id ?? ''}'.trim()),
-        actions: const [
-          ThemeModeMenuButton(),
+        title: Text('Not ${_note.id ?? ''}'.trim()),
+        actions: [
+          if (_note.id != null) ...[
+            if (_editing) ...[
+              IconButton(
+                tooltip: 'İptal',
+                icon: const Icon(Icons.close_rounded),
+                onPressed: () {
+                  setState(() {
+                    _editing = false;
+                    _transcriptController.text = _note.transcript;
+                    _summaryController.text = _note.summary;
+                  });
+                },
+              ),
+              IconButton(
+                tooltip: 'Kaydet',
+                icon: const Icon(Icons.check_rounded),
+                onPressed: _saveEdits,
+              ),
+            ] else
+              IconButton(
+                tooltip: 'Düzenle',
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => setState(() => _editing = true),
+              ),
+          ],
+          const ThemeModeMenuButton(),
         ],
       ),
       body: SafeArea(
@@ -164,35 +243,59 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
             _SectionCard(
               title: 'Transcript',
               icon: Icons.mic_none_rounded,
-              titleAction: _copyTitleAction(
-                widget.note.transcript,
-                'Transkripti kopyala',
-                'Transkript kopyalandı',
-              ),
-              child: Text(
-                widget.note.transcript.trim().isEmpty
-                    ? 'Transcript henüz hazır değil.'
-                    : widget.note.transcript,
-              ),
+              titleAction: _editing
+                  ? null
+                  : _copyTitleAction(
+                      transcriptCopy,
+                      'Transkripti kopyala',
+                      'Transkript kopyalandı',
+                    ),
+              child: _editing
+                  ? TextField(
+                      controller: _transcriptController,
+                      minLines: 4,
+                      maxLines: 12,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                    )
+                  : Text(
+                      _note.transcript.trim().isEmpty
+                          ? 'Transcript henüz hazır değil.'
+                          : _note.transcript,
+                    ),
             ),
             const SizedBox(height: 12),
             _SectionCard(
               title: 'Özet',
               icon: Icons.lightbulb_outline_rounded,
-              titleAction: _copyTitleAction(
-                widget.note.summary,
-                'Özeti kopyala',
-                'Özet kopyalandı',
-              ),
-              child: Text(
-                widget.note.summary.trim().isEmpty
-                    ? 'Özet henüz hazır değil.'
-                    : widget.note.summary,
-              ),
+              titleAction: _editing
+                  ? null
+                  : _copyTitleAction(
+                      summaryCopy,
+                      'Özeti kopyala',
+                      'Özet kopyalandı',
+                    ),
+              child: _editing
+                  ? TextField(
+                      controller: _summaryController,
+                      minLines: 3,
+                      maxLines: 10,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                    )
+                  : Text(
+                      _note.summary.trim().isEmpty
+                          ? 'Özet henüz hazır değil.'
+                          : _note.summary,
+                    ),
             ),
             const SizedBox(height: 18),
             _AudioPlaybackCard(
-              audioPath: widget.note.audioPath,
+              audioPath: _note.audioPath,
               position: _position,
               duration: _duration,
               isPlaying: _isPlaying,
@@ -201,8 +304,9 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
             ),
             const SizedBox(height: 14),
             _ActionsPlaceholder(
-              note: widget.note,
+              note: _note,
               onPlay: _togglePlay,
+              actionsEnabled: !_editing,
             ),
           ],
         ),
@@ -253,6 +357,7 @@ class _AudioPlaybackCard extends StatelessWidget {
             Row(
               children: [
                 IconButton(
+                  tooltip: isPlaying ? 'Duraklat' : 'Oynat',
                   onPressed: onPlayPause,
                   icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
                 ),
@@ -261,7 +366,12 @@ class _AudioPlaybackCard extends StatelessWidget {
                   child: Slider(
                     min: 0,
                     max: duration.inMilliseconds.toDouble().clamp(0, 1e12),
-                    value: position.inMilliseconds.toDouble().clamp(0, duration.inMilliseconds.toDouble()),
+                    value: position.inMilliseconds
+                        .toDouble()
+                        .clamp(0, duration.inMilliseconds.toDouble()),
+                    semanticFormatterCallback: (value) {
+                      return _fmt(Duration(milliseconds: value.round()));
+                    },
                     onChanged: duration == Duration.zero
                         ? null
                         : (v) => onSeek(v),
@@ -270,11 +380,15 @@ class _AudioPlaybackCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text(
-              '${_fmt(position)} / ${_fmt(duration)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+            Semantics(
+              label: 'Geçen ve toplam süre',
+              value: '${_fmt(position)} / ${_fmt(duration)}',
+              child: Text(
+                '${_fmt(position)} / ${_fmt(duration)}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
             ),
             const SizedBox(height: 10),
             Text(
@@ -294,10 +408,12 @@ class _ActionsPlaceholder extends StatelessWidget {
   const _ActionsPlaceholder({
     required this.note,
     required this.onPlay,
+    this.actionsEnabled = true,
   });
 
   final NoteModel note;
   final VoidCallback onPlay;
+  final bool actionsEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -305,32 +421,45 @@ class _ActionsPlaceholder extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: [
-        OutlinedButton.icon(
-          onPressed: onPlay,
-          icon: const Icon(Icons.play_arrow_rounded),
-          label: const Text('Oynat'),
+        Tooltip(
+          message: 'Ses oynat veya duraklat',
+          child: OutlinedButton.icon(
+            onPressed: actionsEnabled ? onPlay : null,
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: const Text('Oynat'),
+          ),
         ),
-        OutlinedButton.icon(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => PdfPreviewScreen(note: note),
-              ),
-            );
-          },
-          icon: const Icon(Icons.picture_as_pdf_rounded),
-          label: const Text('PDF'),
+        Tooltip(
+          message: 'PDF önizleme ekranına git',
+          child: OutlinedButton.icon(
+            onPressed: actionsEnabled
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => PdfPreviewScreen(note: note),
+                      ),
+                    );
+                  }
+                : null,
+            icon: const Icon(Icons.picture_as_pdf_rounded),
+            label: const Text('PDF'),
+          ),
         ),
-        OutlinedButton.icon(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => SharePreviewScreen(note: note),
-              ),
-            );
-          },
-          icon: const Icon(Icons.share_rounded),
-          label: const Text('Paylaş'),
+        Tooltip(
+          message: 'Paylaşım önizleme ekranına git',
+          child: OutlinedButton.icon(
+            onPressed: actionsEnabled
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => SharePreviewScreen(note: note),
+                      ),
+                    );
+                  }
+                : null,
+            icon: const Icon(Icons.share_rounded),
+            label: const Text('Paylaş'),
+          ),
         ),
       ],
     );

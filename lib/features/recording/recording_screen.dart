@@ -38,12 +38,16 @@ class RecordingScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                _formatDuration(state.durationSeconds),
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w300,
-                  fontFeatures: [FontFeature.tabularFigures()],
+              Semantics(
+                label: 'Geçen süre',
+                value: _formatDuration(state.durationSeconds),
+                child: Text(
+                  _formatDuration(state.durationSeconds),
+                  style: const TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w300,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
               const SizedBox(height: 48),
@@ -227,30 +231,39 @@ class _RecordButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 88,
-          height: 88,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isRecording
-                ? Theme.of(context).colorScheme.error
-                : Theme.of(context).colorScheme.errorContainer,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.error,
-              width: 4,
+    final hint = isRecording ? 'Kaydı durdur' : 'Kayda başla';
+
+    return Tooltip(
+      message: hint,
+      child: Semantics(
+        button: true,
+        label: hint,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            customBorder: const CircleBorder(),
+            child: Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isRecording
+                    ? Theme.of(context).colorScheme.error
+                    : Theme.of(context).colorScheme.errorContainer,
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.error,
+                  width: 4,
+                ),
+              ),
+              child: Icon(
+                isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                size: 40,
+                color: isRecording
+                    ? Theme.of(context).colorScheme.onError
+                    : Theme.of(context).colorScheme.onErrorContainer,
+              ),
             ),
-          ),
-          child: Icon(
-            isRecording ? Icons.stop_rounded : Icons.mic_rounded,
-            size: 40,
-            color: isRecording
-                ? Theme.of(context).colorScheme.onError
-                : Theme.of(context).colorScheme.onErrorContainer,
           ),
         ),
       ),

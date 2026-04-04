@@ -13,8 +13,8 @@ import 'package:voice_2_note_ai/models/note_model.dart';
 
 /// PDF export service.
 class PdfService {
-  Future<File> generateNotePdfFile(NoteModel note) async {
-    // Unicode karakterleri (Türkçe ş, ğ, ı vs.) için Noto Sans fontu kullanıyoruz.
+  /// Önizleme/yazdırma için ham PDF baytları.
+  Future<Uint8List> buildNotePdfBytes(NoteModel note) async {
     final notoSansData = await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
     final notoSansFont = pw.Font.ttf(notoSansData.buffer.asByteData());
 
@@ -64,7 +64,11 @@ class PdfService {
       ),
     );
 
-    final bytes = await pdf.save();
+    return pdf.save();
+  }
+
+  Future<File> generateNotePdfFile(NoteModel note) async {
+    final bytes = await buildNotePdfBytes(note);
 
     final dir = await getApplicationDocumentsDirectory();
     final pdfDir = Directory(p.join(dir.path, 'pdf'));

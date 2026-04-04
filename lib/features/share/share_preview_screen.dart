@@ -5,9 +5,7 @@ import 'package:voice_2_note_ai/services/pdf_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:voice_2_note_ai/services/share_service.dart';
 
-/// Share (paylaşım) ekranı (UI iskeleti).
-///
-/// Bu adımda gerçek paylaşım (share_plus / PDF) henüz yok.
+/// Transkript, özet veya PDF paylaşımı.
 class SharePreviewScreen extends StatelessWidget {
   const SharePreviewScreen({
     super.key,
@@ -21,7 +19,7 @@ class SharePreviewScreen extends StatelessWidget {
     final shareService = ShareService();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paylaşım (yakında)'),
+        title: const Text('Paylaşım'),
         actions: const [
           ThemeModeMenuButton(),
         ],
@@ -55,12 +53,12 @@ class SharePreviewScreen extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: () => shareService.shareTranscript(note.transcript),
                   icon: const Icon(Icons.share_rounded),
-                  label: const Text("Transcript paylas"),
+                  label: const Text('Transkripti paylaş'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => shareService.shareSummary(note.summary),
                   icon: const Icon(Icons.share_rounded),
-                  label: const Text("Ozet paylas"),
+                  label: const Text('Özeti paylaş'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () async {
@@ -81,7 +79,7 @@ class SharePreviewScreen extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.picture_as_pdf_rounded),
-                  label: const Text("PDF paylas"),
+                  label: const Text('PDF paylaş'),
                 ),
               ],
             ),

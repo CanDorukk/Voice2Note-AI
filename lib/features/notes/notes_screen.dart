@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
-import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/note_detail_screen.dart';
+import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/recording/recording_screen.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
+import 'package:voice_2_note_ai/services/notes_backup_service.dart';
 
 /// Not listesi ekranı. DB'den notları çeker; boşsa boş durum; arama transkript/özet içinde.
 class NotesScreen extends ConsumerStatefulWidget {
@@ -69,6 +71,23 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     );
   }
 
+  Future<void> _exportAllNotes(BuildContext context) async {
+    try {
+      final notes = await ref.read(noteRepositoryProvider).getAll();
+      final file = await NotesBackupService.writeJsonExport(notes);
+      if (!context.mounted) return;
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Voice2 Note AI not yedeği',
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Dışa aktarılamadı: $e')),
+      );
+    }
+  }
+
   PreferredSizeWidget _notesAppBar(
     BuildContext context, {
     PreferredSizeWidget? bottom,
@@ -77,6 +96,11 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       title: const Text('Notlar'),
       bottom: bottom,
       actions: [
+        IconButton(
+          tooltip: 'Tüm notları JSON olarak dışa aktar',
+          icon: const Icon(Icons.save_alt_rounded),
+          onPressed: () => _exportAllNotes(context),
+        ),
         const ThemeModeMenuButton(),
         IconButton(
           tooltip: 'Hakkında',
@@ -114,6 +138,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           return Scaffold(
             appBar: _notesAppBar(context),
             floatingActionButton: FloatingActionButton.extended(
+              tooltip: 'Yeni ses kaydı',
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -149,16 +174,19 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                           ),
                     ),
                     const SizedBox(height: 24),
-                    FilledButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (context) => const RecordingScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.mic_rounded),
-                      label: const Text('Ses kaydı'),
+                    Tooltip(
+                      message: 'Ses kaydı ekranına git',
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) => const RecordingScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.mic_rounded),
+                        label: const Text('Ses kaydı'),
+                      ),
                     ),
                   ],
                 ),
@@ -176,32 +204,38 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
               preferredSize: const Size.fromHeight(52),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Transkript veya özette ara',
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: _query.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _query = '');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: Semantics(
+                  label: 'Transkript veya özette ara',
+                  textField: true,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Transkript veya özette ara',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: _query.isNotEmpty
+                          ? IconButton(
+                              tooltip: 'Aramayı temizle',
+                              icon: const Icon(Icons.clear_rounded),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      isDense: true,
                     ),
-                    isDense: true,
+                    onChanged: (v) => setState(() => _query = v),
                   ),
-                  onChanged: (v) => setState(() => _query = v),
                 ),
               ),
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
+            tooltip: 'Yeni ses kaydı',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -262,6 +296,7 @@ class _NoteListTile extends ConsumerWidget {
       title: Text(title.isEmpty ? 'Not ${note.id}' : title),
       subtitle: Text(dateStr),
       trailing: PopupMenuButton<String>(
+        tooltip: 'Not seçenekleri',
         onSelected: (value) async {
           if (value == 'delete') {
             final id = note.id;
@@ -290,9 +325,7 @@ class _NoteListTile extends ConsumerWidget {
             if (confirm != true) return;
 
             if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Siliniyor...')),
-            );
+            final backup = note;
 
             await ref.read(noteRepositoryProvider).delete(id);
 
@@ -300,7 +333,25 @@ class _NoteListTile extends ConsumerWidget {
             ref.invalidate(notesListProvider);
 
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Silindi')),
+              SnackBar(
+                content: const Text('Not silindi'),
+                action: SnackBarAction(
+                  label: 'Geri al',
+                  onPressed: () async {
+                    await ref.read(noteRepositoryProvider).insert(
+                          NoteModel(
+                            id: null,
+                            audioPath: backup.audioPath,
+                            transcript: backup.transcript,
+                            summary: backup.summary,
+                            duration: backup.duration,
+                            createdAt: backup.createdAt,
+                          ),
+                        );
+                    ref.invalidate(notesListProvider);
+                  },
+                ),
+              ),
             );
           }
         },

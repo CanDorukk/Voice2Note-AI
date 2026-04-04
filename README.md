@@ -5,7 +5,8 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 ## Özellikler (özet)
 
 - **Tema:** Sistem, açık veya koyu; tercih cihazda saklanır ve ana ekranlarda menüden değiştirilebilir.
-- **Notlar:** Liste; transkript ve özet metninde arama; detayda metin kopyalama, ses oynatma, PDF ve paylaşım akışları (önizleme ekranları mevcut).
+- **Notlar:** Liste; transkript/özet araması; detayda **düzenleme** (kaydet), kopyalama, ses oynatma; silmeden sonra SnackBar ile **geri al**; tüm notları **JSON yedek** olarak dışa aktarma (paylaşım).
+- **PDF:** Önizleme/yazdırma (`printing`) ve dosyaya kaydetme; paylaşım ekranında transkript/özet/PDF paylaşımı.
 - **Hakkında:** Uygulama sürümü ve `showLicensePage` ile lisanslar; ilk açılış tanıtım ekranında sürüm satırı.
 
 ## Gereksinimler
@@ -31,7 +32,7 @@ flutter test
 flutter analyze
 ```
 
-Push ve pull request’lerde GitHub Actions aynı komutları çalıştırır (`.github/workflows/flutter_ci.yml`). Tam APK/NDK derlemesi CI’da yoktur.
+Push ve pull request’lerde GitHub Actions aynı komutları çalıştırır (`.github/workflows/flutter_ci.yml`). Tam **APK/NDK** derlemesi CI’da yoktur; yerelde `flutter build apk` ile deneyebilirsiniz.
 
 ## Platform notu
 
