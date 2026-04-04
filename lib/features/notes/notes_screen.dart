@@ -246,28 +246,35 @@ class _PendingProcessingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: SizedBox(
-        width: 40,
-        height: 40,
-        child: Center(
+    final dur = _fmtDur(item.durationSeconds);
+    return Semantics(
+      label: 'Ses kaydı, transkript hazırlanıyor, süre $dur',
+      hint: 'İşlem bitince tam not listede görünür',
+      child: ListTile(
+        leading: ExcludeSemantics(
           child: SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Theme.of(context).colorScheme.primary,
+            width: 40,
+            height: 40,
+            child: Center(
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
             ),
           ),
         ),
-      ),
-      title: const Text('Ses kaydı'),
-      subtitle: const Text('Transkript hazırlanıyor…'),
-      trailing: Text(
-        _fmtDur(item.durationSeconds),
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+        title: const Text('Ses kaydı'),
+        subtitle: const Text('Transkript hazırlanıyor…'),
+        trailing: Text(
+          dur,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
       ),
     );
   }
