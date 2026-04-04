@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/core/constants/app_constants.dart';
-import 'package:voice_2_note_ai/features/notes/notes_screen.dart';
 
 /// Uygulama açılışında gösterilen tanıtım / karşılama ekranı.
 /// Sadece ilk yüklemede gösterilir; "Başla" ile ana sayfaya geçilir ve bir daha gösterilmez.
@@ -34,11 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.introSeenKey, true);
     if (!context.mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (context) => const NotesScreen(),
-      ),
-    );
+    AppNavigation.pushNotesReplace(context);
   }
 
   @override

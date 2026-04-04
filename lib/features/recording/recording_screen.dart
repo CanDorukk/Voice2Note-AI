@@ -1,14 +1,11 @@
-import 'dart:io';
+import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:voice_2_note_ai/services/speech_to_text_service.dart';
-import 'package:voice_2_note_ai/services/summary_service.dart';
-import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
+import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
+import 'package:voice_2_note_ai/features/recording/post_recording_pipeline.dart';
 import 'package:voice_2_note_ai/features/recording/recording_provider.dart';
-import 'package:voice_2_note_ai/models/note_model.dart';
 
 /// Ses kayıt ekranı. Kayıt başlat/durdur, süre gösterimi.
 class RecordingScreen extends ConsumerWidget {
@@ -58,128 +55,29 @@ class RecordingScreen extends ConsumerWidget {
                     final durationSeconds = state.durationSeconds;
                     final path = await notifier.stopRecording();
                     if (!context.mounted) return;
-                    final exists =
-                        path != null && (path.startsWith('content://') || File(path).existsSync());
-                    if (exists) {
-                      final stt = SpeechToTextService();
-                      final summarizer = SummaryService();
 
-                      String? transcript;
-                      String? summary;
+                    // RecordingService zaten temp + MediaStore doğruladı; hemen sonra
+                    // File.existsSync bazen yanlış false döner (yazım gecikmesi).
+                    final hasPath =
+                        path != null && path.trim().isNotEmpty;
 
-                      await showDialog<void>(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (dialogContext) {
-                          final navigator = Navigator.of(dialogContext);
-                          var started = false;
-                          return StatefulBuilder(
-                            builder: (context, setState) {
-                              String stepText = 'Transkript alınıyor...';
-                              if (!started) {
-                                started = true;
-                                Future<void>(() async {
-                                  final minVisibleUntil = DateTime.now().add(
-                                    const Duration(seconds: 1),
-                                  );
-                                  try {
-                                    setState(() => stepText = 'Transkript alınıyor...');
-                                    // İlk karede metnin görünmesi için kısa gecikme.
-                                    await Future<void>.delayed(const Duration(milliseconds: 250));
-                                    if (!context.mounted) return;
-                                    transcript = await stt.transcribe(audioPath: path);
-
-                                    if (!context.mounted) return;
-                                    setState(() => stepText = 'Özet hazırlanıyor...');
-                                    await Future<void>.delayed(const Duration(milliseconds: 150));
-                                    if (!context.mounted) return;
-                                    summary = await summarizer.summarize(transcript ?? '');
-
-                                    if (!context.mounted) return;
-                                    await ref.read(noteRepositoryProvider).insert(
-                                          NoteModel(
-                                            audioPath: path,
-                                            transcript: transcript ?? '',
-                                            summary: summary ?? '',
-                                            duration: durationSeconds,
-                                            createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-                                          ),
-                                        );
-
-                                    ref.invalidate(notesListProvider);
-                                  } catch (e, st) {
-                                    if (kDebugMode) {
-                                      debugPrint('RecordingScreen işleme hatası: $e\n$st');
-                                    }
-                                    transcript ??= 'İşlem tamamlanamadı.';
-                                    summary ??= '';
-                                    if (!context.mounted) return;
-                                    try {
-                                      await ref.read(noteRepositoryProvider).insert(
-                                            NoteModel(
-                                              audioPath: path,
-                                              transcript: transcript ?? '',
-                                              summary: summary ?? '',
-                                              duration: durationSeconds,
-                                              createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-                                            ),
-                                          );
-                                      ref.invalidate(notesListProvider);
-                                    } catch (_) {}
-                                  } finally {
-                                    final now = DateTime.now();
-                                    if (now.isBefore(minVisibleUntil)) {
-                                      await Future<void>.delayed(minVisibleUntil.difference(now));
-                                    }
-                                  }
-                                  if (!context.mounted) return;
-                                  if (navigator.canPop()) navigator.pop();
-                                });
-                              }
-
-                              return AlertDialog(
-                                title: const Text('İşleniyor'),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const CircularProgressIndicator(),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Text(
-                                            stepText,
-                                            style: Theme.of(context).textTheme.bodyMedium,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'Çevrimdışı transkript bu cihazda kayıt süresinin birkaç katı zaman alabilir.',
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                    if (hasPath) {
+                      ref.read(pendingProcessingProvider.notifier).add(
+                            audioPath: path,
+                            durationSeconds: durationSeconds,
                           );
-                        },
-                      );
 
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Not kaydedildi'),
-                          duration: const Duration(seconds: 3),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primaryContainer,
-                          behavior: SnackBarBehavior.floating,
+                      final messenger = ScaffoldMessenger.of(context);
+                      final container = ProviderScope.containerOf(context);
+
+                      Navigator.of(context).pop();
+
+                      unawaited(
+                        runPostRecordingPipeline(
+                          container: container,
+                          messenger: messenger,
+                          audioPath: path,
+                          durationSeconds: durationSeconds,
                         ),
                       );
                     } else {
@@ -189,9 +87,9 @@ class RecordingScreen extends ConsumerWidget {
                           backgroundColor: Colors.red,
                         ),
                       );
+                      if (!context.mounted) return;
+                      Navigator.of(context).pop();
                     }
-                    if (!context.mounted) return;
-                    Navigator.of(context).pop();
                   } else {
                     await notifier.startRecording();
                     if (!context.mounted) return;

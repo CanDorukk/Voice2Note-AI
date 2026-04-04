@@ -65,7 +65,16 @@ class WhisperService {
             )
             .timeout(transcribeTimeout);
         if (out != null && out.trim().isNotEmpty) {
-          return out.trim();
+          final text = out.trim();
+          if (kDebugMode) {
+            debugPrint(
+              'WhisperService: transkript tamam (${text.length} karakter)',
+            );
+          }
+          return text;
+        }
+        if (kDebugMode) {
+          debugPrint('WhisperService: native boş metin döndü');
         }
       } on TimeoutException {
         if (kDebugMode) {

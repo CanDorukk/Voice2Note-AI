@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
-import 'package:voice_2_note_ai/features/notes/note_detail_screen.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
-import 'package:voice_2_note_ai/features/recording/recording_screen.dart';
+import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
-import 'package:voice_2_note_ai/services/notes_backup_service.dart';
 
 /// Not listesi ekranı. DB'den notları çeker; boşsa boş durum; arama transkript/özet içinde.
 class NotesScreen extends ConsumerStatefulWidget {
@@ -71,23 +69,6 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     );
   }
 
-  Future<void> _exportAllNotes(BuildContext context) async {
-    try {
-      final notes = await ref.read(noteRepositoryProvider).getAll();
-      final file = await NotesBackupService.writeJsonExport(notes);
-      if (!context.mounted) return;
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Voice2 Note AI not yedeği',
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Dışa aktarılamadı: $e')),
-      );
-    }
-  }
-
   PreferredSizeWidget _notesAppBar(
     BuildContext context, {
     PreferredSizeWidget? bottom,
@@ -96,11 +77,6 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       title: const Text('Notlar'),
       bottom: bottom,
       actions: [
-        IconButton(
-          tooltip: 'Tüm notları JSON olarak dışa aktar',
-          icon: const Icon(Icons.save_alt_rounded),
-          onPressed: () => _exportAllNotes(context),
-        ),
         const ThemeModeMenuButton(),
         IconButton(
           tooltip: 'Hakkında',
@@ -134,18 +110,15 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         ),
       ),
       data: (notes) {
-        if (notes.isEmpty) {
+        final pending = ref.watch(pendingProcessingProvider);
+        final filtered = _filter(notes);
+
+        if (notes.isEmpty && pending.isEmpty) {
           return Scaffold(
             appBar: _notesAppBar(context),
             floatingActionButton: FloatingActionButton.extended(
               tooltip: 'Yeni ses kaydı',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const RecordingScreen(),
-                  ),
-                );
-              },
+              onPressed: () => AppNavigation.pushRecording(context),
               icon: const Icon(Icons.mic_rounded),
               label: const Text('Kayıt'),
             ),
@@ -177,13 +150,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     Tooltip(
                       message: 'Ses kaydı ekranına git',
                       child: FilledButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (context) => const RecordingScreen(),
-                            ),
-                          );
-                        },
+                        onPressed: () => AppNavigation.pushRecording(context),
                         icon: const Icon(Icons.mic_rounded),
                         label: const Text('Ses kaydı'),
                       ),
@@ -195,83 +162,113 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           );
         }
 
-        final filtered = _filter(notes);
-
-        return Scaffold(
-          appBar: _notesAppBar(
-            context,
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(52),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Semantics(
-                  label: 'Transkript veya özette ara',
-                  textField: true,
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Transkript veya özette ara',
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: _query.isNotEmpty
-                          ? IconButton(
-                              tooltip: 'Aramayı temizle',
-                              icon: const Icon(Icons.clear_rounded),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _query = '');
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      isDense: true,
-                    ),
-                    onChanged: (v) => setState(() => _query = v),
+        final searchBar = PreferredSize(
+          preferredSize: const Size.fromHeight(52),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Semantics(
+              label: 'Transkript veya özette ara',
+              textField: true,
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Transkript veya özette ara',
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  suffixIcon: _query.isNotEmpty
+                      ? IconButton(
+                          tooltip: 'Aramayı temizle',
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _query = '');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  isDense: true,
                 ),
+                onChanged: (v) => setState(() => _query = v),
               ),
             ),
           ),
+        );
+
+        final listChildren = <Widget>[
+          ...pending.map((item) => _PendingProcessingTile(item: item)),
+          if (filtered.isEmpty && _query.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Text(
+                'Bu aramaya uygun not yok.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ),
+          ...filtered.map((note) => _NoteListTile(note: note)),
+        ];
+
+        return Scaffold(
+          appBar: _notesAppBar(context, bottom: searchBar),
           floatingActionButton: FloatingActionButton.extended(
             tooltip: 'Yeni ses kaydı',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => const RecordingScreen(),
-                ),
-              );
-            },
+            onPressed: () => AppNavigation.pushRecording(context),
             icon: const Icon(Icons.mic_rounded),
             label: const Text('Kayıt'),
           ),
-          body: filtered.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      'Bu aramaya uygun not yok.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: () => ref.refresh(notesListProvider.future),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final note = filtered[index];
-                      return _NoteListTile(note: note);
-                    },
-                  ),
-                ),
+          body: RefreshIndicator(
+            onRefresh: () => ref.refresh(notesListProvider.future),
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: listChildren,
+            ),
+          ),
         );
       },
+    );
+  }
+}
+
+class _PendingProcessingTile extends StatelessWidget {
+  const _PendingProcessingTile({required this.item});
+
+  final PendingProcessingItem item;
+
+  static String _fmtDur(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: SizedBox(
+        width: 40,
+        height: 40,
+        child: Center(
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+      ),
+      title: const Text('Ses kaydı'),
+      subtitle: const Text('Transkript hazırlanıyor…'),
+      trailing: Text(
+        _fmtDur(item.durationSeconds),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+      ),
     );
   }
 }
@@ -369,13 +366,7 @@ class _NoteListTile extends ConsumerWidget {
         ],
         child: const Icon(Icons.more_vert_rounded),
       ),
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (context) => NoteDetailScreen(note: note),
-          ),
-        );
-      },
+      onTap: () => AppNavigation.pushNoteDetail(context, note),
     );
   }
 }

@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
-import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
-import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 
 /// Tek bir notun detay ekranı: transkript, özet, ses oynatma, PDF, paylaşım.
@@ -433,13 +432,7 @@ class _ActionsPlaceholder extends StatelessWidget {
           message: 'PDF önizleme ekranına git',
           child: OutlinedButton.icon(
             onPressed: actionsEnabled
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => PdfPreviewScreen(note: note),
-                      ),
-                    );
-                  }
+                ? () => AppNavigation.pushPdfPreview(context, note)
                 : null,
             icon: const Icon(Icons.picture_as_pdf_rounded),
             label: const Text('PDF'),
@@ -449,13 +442,7 @@ class _ActionsPlaceholder extends StatelessWidget {
           message: 'Paylaşım önizleme ekranına git',
           child: OutlinedButton.icon(
             onPressed: actionsEnabled
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => SharePreviewScreen(note: note),
-                      ),
-                    );
-                  }
+                ? () => AppNavigation.pushSharePreview(context, note)
                 : null,
             icon: const Icon(Icons.share_rounded),
             label: const Text('Paylaş'),
