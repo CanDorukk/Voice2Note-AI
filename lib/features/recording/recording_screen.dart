@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
@@ -62,6 +63,8 @@ class RecordingScreen extends ConsumerWidget {
                         path != null && path.trim().isNotEmpty;
 
                     if (hasPath) {
+                      await HapticFeedback.mediumImpact();
+                      if (!context.mounted) return;
                       ref.read(pendingProcessingProvider.notifier).add(
                             audioPath: path,
                             durationSeconds: durationSeconds,
@@ -93,7 +96,9 @@ class RecordingScreen extends ConsumerWidget {
                   } else {
                     await notifier.startRecording();
                     if (!context.mounted) return;
-                    if (!ref.read(recordingProvider).isRecording) {
+                    if (ref.read(recordingProvider).isRecording) {
+                      await HapticFeedback.lightImpact();
+                    } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Mikrofon izni gerekli'),

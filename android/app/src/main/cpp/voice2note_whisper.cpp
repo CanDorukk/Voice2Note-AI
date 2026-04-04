@@ -275,14 +275,22 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
     return load_err;
   }
 
-  whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
+  whisper_full_params params =
+      whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH);
   params.print_progress = false;
   params.print_realtime = false;
   params.print_timestamps = false;
   params.translate = false;
   params.no_timestamps = true;
-  params.single_segment = true;
+  // Uzun kayıtlarda segment bazlı çözümleme; metin yine tüm segmentlerden birleştirilir.
+  params.single_segment = false;
+  // Önceki metin bağlamı sonraki segmente ipucu verir (daha tutarlı çıktı).
+  params.no_context = false;
+  params.suppress_nst = true;
+  params.beam_search.beam_size = 5;
   params.language = "tr";
+  // Kısa alan ipucu (UTF-8 kaynak dosyası): Türkçe dağılıma yönlendirir.
+  params.initial_prompt = "Bu kayıt Türkçe konuşma içerir.";
   {
     int n_threads = static_cast<int>(std::thread::hardware_concurrency());
     if (n_threads < 1) {

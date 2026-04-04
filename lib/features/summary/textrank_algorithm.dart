@@ -6,6 +6,18 @@ import 'dart:math';
 ///
 /// Not: Bu implementasyon saf Dart ile çalışır (ekstra AI/API gerektirmez).
 class TextRankAlgorithm {
+  /// Türkçe bağlaç/zamir vb. — skorda gürültüyü azaltır.
+  static const Set<String> _trStopwords = {
+    've', 'veya', 'ile', 'için', 'gibi', 'kadar', 'bir', 'bu', 'şu', 'o',
+    'ben', 'sen', 'biz', 'siz', 'onlar', 'de', 'da', 'ki', 'mi', 'mı', 'mu',
+    'mü', 'çok', 'daha', 'en', 'her', 'hiç', 'ne', 'neden', 'nasıl', 'var',
+    'yok', 'ise', 'ama', 'fakat', 'ancak', 'hem', 'sonra', 'önce', 'şimdi',
+    'böyle', 'şöyle', 'öyle', 'burada', 'orada', 'kendi', 'kendine', 'bazı',
+    'tüm', 'bütün', 'herhangi', 'birkaç', 'değil', 'olan', 'olarak', 'üzere',
+    'rağmen', 'karşı', 'göre', 'önceki', 'şey', 'biri', 'bunu',
+    'buna', 'onu', 'ona', 'şunu',
+  };
+
   /// Transkript içinden en önemli cümleleri seçip özet döndürür.
   ///
   /// [maxSentences] null ise otomatik bir değer hesaplanır.
@@ -17,10 +29,12 @@ class TextRankAlgorithm {
     if (text.isEmpty) return '';
 
     final sentences = _splitSentences(text);
-    if (sentences.length <= 1) return text;
+    if (sentences.isEmpty) return text;
+    if (sentences.length <= 1) return sentences.first;
 
+    final autoCap = min(10, sentences.length);
     final normalizedMaxSentences = maxSentences ??
-        max(1, (sentences.length / 3).ceil()).clamp(1, sentences.length);
+        max(1, (sentences.length / 4).ceil()).clamp(1, autoCap);
 
     // Çok kısa metinlerde aşırı işlem yapma.
     if (normalizedMaxSentences >= sentences.length) {
@@ -138,25 +152,27 @@ class TextRankAlgorithm {
   }
 
   List<String> _splitSentences(String text) {
-    // Basit cümle bölme: nokta/ünlem/soru + satır sonları.
-    final parts = text
-        .replaceAll('\n', ' ')
-        .split(RegExp(r'[.!?]+'))
+    final normalized = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final parts = normalized
+        .split(RegExp(r'(?:\.{3,}|[.!?…;]+)\s*'))
         .map((s) => s.trim())
         .where((s) => s.isNotEmpty)
         .toList();
 
-    // Çok kısa cümleleri azalt.
-    return parts.where((s) => _tokenize(s).length >= 2).toList();
+    return parts.where((s) {
+      final t = _tokenize(s);
+      return t.length >= 2 || s.runes.length >= 24;
+    }).toList();
   }
 
   List<String> _tokenize(String sentence) {
     final lower = sentence.toLowerCase();
-    final tokens = RegExp(r"[0-9a-zA-Zçğıöşü]+", unicode: true)
+    final raw = RegExp(r'[\p{L}\p{N}]+', unicode: true)
         .allMatches(lower)
         .map((m) => m.group(0)!)
         .toList();
-    return tokens;
+    final filtered = raw.where((t) => !_trStopwords.contains(t)).toList();
+    return filtered.isNotEmpty ? filtered : raw;
   }
 
   double _cosineSimilarity(
