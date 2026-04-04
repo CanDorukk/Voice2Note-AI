@@ -30,11 +30,11 @@ class PdfPreviewScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             _SectionCard(
-              title: 'Transcript',
+              title: 'Transkript',
               icon: Icons.mic_none_rounded,
               child: Text(
                 note.transcript.trim().isEmpty
-                    ? 'Transcript henüz hazır değil.'
+                    ? 'Transkript henüz hazır değil.'
                     : note.transcript,
               ),
             ),

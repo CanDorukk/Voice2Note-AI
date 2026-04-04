@@ -6,7 +6,7 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 
 - **Tema:** Sistem, açık veya koyu; tercih cihazda saklanır ve ana ekranlarda menüden değiştirilebilir.
 - **Notlar:** Liste; transkript/özet araması; detayda **düzenleme** (kaydet), kopyalama, ses oynatma; silmeden sonra SnackBar ile **geri al**.
-- **Kayıt sonrası:** Transkript ve özet **arka planda** işlenir; kayıt ekranı hemen kapanır, hazır olunca SnackBar ile bildirilir (`post_recording_pipeline.dart`).
+- **Kayıt sonrası:** Kayıt ekranı hemen kapanır; notlar listesinde **“Transkript hazırlanıyor…”** satırı görünür, işlem bitince gerçek notla değişir. Arka plan işi `post_recording_pipeline.dart`, bekleyen satırlar `pending_processing_provider.dart`.
 - **Gezinme:** Ana `MaterialPageRoute` geçişleri `lib/app/app_navigation.dart` içinde toplanır.
 - **PDF:** Önizleme/yazdırma (`printing`) ve dosyaya kaydetme; paylaşım ekranında transkript/özet/PDF paylaşımı.
 - **Hakkında:** Uygulama sürümü ve `showLicensePage` ile lisanslar; ilk açılış tanıtım ekranında sürüm satırı.

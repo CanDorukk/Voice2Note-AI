@@ -40,7 +40,7 @@ class PdfService {
               pw.Text('Oluşturulma: $dateStr', style: pw.TextStyle(font: notoSansFont)),
               pw.SizedBox(height: 18),
               pw.Text(
-                'Transcript',
+                'Transkript',
                 style: pw.TextStyle(font: notoSansFont, fontSize: 14),
               ),
               pw.SizedBox(height: 6),

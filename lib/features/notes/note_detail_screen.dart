@@ -240,7 +240,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             ),
             const SizedBox(height: 12),
             _SectionCard(
-              title: 'Transcript',
+              title: 'Transkript',
               icon: Icons.mic_none_rounded,
               titleAction: _editing
                   ? null
@@ -261,7 +261,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     )
                   : Text(
                       _note.transcript.trim().isEmpty
-                          ? 'Transcript henüz hazır değil.'
+                          ? 'Transkript henüz hazır değil.'
                           : _note.transcript,
                     ),
             ),
