@@ -42,7 +42,8 @@ Push ve pull request’lerde GitHub Actions aynı komutları çalıştırır (`.
 
 1. **Model:** İsteğe bağlı `small` ggml quantize veya uygulama içi model seçimi.
 2. **İçe aktarma:** iOS veya ek biçimler için dönüştürme / net hata mesajları (Android’de m4a vb. MediaCodec ile).
-3. **Türkçe:** Ek normalizasyon (birleşik/ayrık yazım, kullanıcı sözlüğü) ve arama eş anlamlılığı.
+3. **Tanıtım / ses paketi:** Tanıtımı geçmiş ama Whisper paketini indirmemiş kullanıcılar için uygulama içinden paketi yeniden indirme (ör. Ayarlar veya Hakkında altında “Ses paketini indir”) — şu an yalnızca ilk açılış akışında indirme var.
+4. **Türkçe (ileri):** Arama eş anlamlılığı veya kullanıcı sözlüğü; not araması ve TextRank için `normalizeForTurkishSearch` ile birleşik/ayrık yazım ve Latin uzantı harfleri zaten uygulanıyor.
 
 ## Platform notu
 

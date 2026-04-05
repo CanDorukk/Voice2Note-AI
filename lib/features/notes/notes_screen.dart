@@ -35,11 +35,11 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   }
 
   List<NoteModel> _filter(List<NoteModel> notes) {
-    final q = foldTurkishForSearch(_query.trim());
+    final q = normalizeForTurkishSearch(_query.trim());
     if (q.isEmpty) return notes;
     return notes.where((n) {
-      return foldTurkishForSearch(n.transcript).contains(q) ||
-          foldTurkishForSearch(n.summary).contains(q);
+      return normalizeForTurkishSearch(n.transcript).contains(q) ||
+          normalizeForTurkishSearch(n.summary).contains(q);
     }).toList();
   }
 

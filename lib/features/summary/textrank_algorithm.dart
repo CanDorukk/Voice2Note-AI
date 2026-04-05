@@ -168,7 +168,7 @@ class TextRankAlgorithm {
   }
 
   List<String> _tokenize(String sentence) {
-    final lower = foldTurkishForSearch(sentence);
+    final lower = normalizeForTurkishSearch(sentence);
     final raw = RegExp(r'[\p{L}\p{N}]+', unicode: true)
         .allMatches(lower)
         .map((m) => m.group(0)!)
