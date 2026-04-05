@@ -200,11 +200,15 @@ class _SplashScreenState extends State<SplashScreen> {
                         Card(
                           margin: EdgeInsets.zero,
                           elevation: 0,
-                          color: cs.surfaceContainerHighest.withOpacity(0.85),
+                          color: cs.surfaceContainerHighest.withAlpha(
+                            (cs.surfaceContainerHighest.alpha * 0.85).round(),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
-                              color: cs.outlineVariant.withOpacity(0.45),
+                              color: cs.outlineVariant.withAlpha(
+                                (cs.outlineVariant.alpha * 0.45).round(),
+                              ),
                             ),
                           ),
                           child: Padding(

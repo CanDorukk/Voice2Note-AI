@@ -11,6 +11,7 @@ import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_download_section.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/audio_to_note_pipeline.dart';
 import 'package:voice_2_note_ai/services/whisper_audio_import.dart';
@@ -155,6 +156,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             'sürekli internet gerekmez.',
           ),
         ),
+        const WhisperModelDownloadSection(),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
