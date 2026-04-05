@@ -1,3 +1,3 @@
-/// `ggml-tiny-q5_1.bin` için beklenen minimum boyut (kırpılmış/bozuk dosyayı yakalamak için).
-/// Resmi quantize tiny ~31 MB; 25 MB altını geçersiz sayıyoruz.
-const int kWhisperGgmlTinyQ5MinBytes = 25 * 1024 * 1024;
+/// `ggml-base-q5_1.bin` için beklenen minimum boyut (kırpılmış/bozuk dosyayı yakalamak için).
+/// Quantize base ~57 MB; 50 MB altını geçersiz sayıyoruz.
+const int kWhisperGgmlBaseQ5MinBytes = 50 * 1024 * 1024;

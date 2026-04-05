@@ -76,7 +76,7 @@ class RecordingScreen extends ConsumerWidget {
                       Navigator.of(context).pop();
 
                       unawaited(
-                        runPostRecordingPipeline(
+                        runAudioToNotePipeline(
                           container: container,
                           messenger: messenger,
                           audioPath: path,

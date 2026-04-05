@@ -2,6 +2,8 @@
 
 import 'dart:math';
 
+import 'package:voice_2_note_ai/utils/turkish_text.dart';
+
 /// Offline extractive summarization using TextRank.
 ///
 /// Not: Bu implementasyon saf Dart ile çalışır (ekstra AI/API gerektirmez).
@@ -166,7 +168,7 @@ class TextRankAlgorithm {
   }
 
   List<String> _tokenize(String sentence) {
-    final lower = sentence.toLowerCase();
+    final lower = foldTurkishForSearch(sentence);
     final raw = RegExp(r'[\p{L}\p{N}]+', unicode: true)
         .allMatches(lower)
         .map((m) => m.group(0)!)

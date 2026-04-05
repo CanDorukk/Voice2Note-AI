@@ -7,12 +7,16 @@ class PendingProcessingItem {
     required this.audioPath,
     required this.durationSeconds,
     required this.startedAtMs,
+    this.displayLabel = 'Ses kaydı',
   });
 
   final String id;
   final String audioPath;
   final int durationSeconds;
   final int startedAtMs;
+
+  /// Liste satırında gösterilir (ör. dosya içe aktarma).
+  final String displayLabel;
 }
 
 class PendingProcessingNotifier extends StateNotifier<List<PendingProcessingItem>> {
@@ -21,6 +25,7 @@ class PendingProcessingNotifier extends StateNotifier<List<PendingProcessingItem
   void add({
     required String audioPath,
     required int durationSeconds,
+    String displayLabel = 'Ses kaydı',
   }) {
     final id = '${DateTime.now().millisecondsSinceEpoch}_${audioPath.hashCode}';
     state = [
@@ -29,6 +34,7 @@ class PendingProcessingNotifier extends StateNotifier<List<PendingProcessingItem
         audioPath: audioPath,
         durationSeconds: durationSeconds,
         startedAtMs: DateTime.now().millisecondsSinceEpoch,
+        displayLabel: displayLabel,
       ),
       ...state,
     ];

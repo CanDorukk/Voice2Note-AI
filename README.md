@@ -6,7 +6,7 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 
 - **Tema:** Sistem, açık veya koyu; tercih cihazda saklanır ve ana ekranlarda menüden değiştirilebilir.
 - **Notlar:** Liste; transkript/özet araması; detayda **düzenleme** (kaydet), kopyalama, ses oynatma; silmeden sonra SnackBar ile **geri al**.
-- **Kayıt sonrası:** Kayıt ekranı hemen kapanır; notlar listesinde **“Transkript hazırlanıyor…”** satırı görünür, işlem bitince gerçek notla değişir. Arka plan işi `post_recording_pipeline.dart`, bekleyen satırlar `pending_processing_provider.dart`.
+- **Kayıt / dosya:** Mikrofon kaydı veya dosya seçicide **yalnızca ses** (ör. m4a, wav); Android’de gerekirse `AudioToWav16kMono` ile 16 kHz mono PCM WAV’a dönüştürülür. Arka planda aynı işlem (`audio_to_note_pipeline.dart`) transkript + özet + veritabanı. Bekleyen satırlar `pending_processing_provider.dart`.
 - **Gezinme:** Ana `MaterialPageRoute` geçişleri `lib/app/app_navigation.dart` içinde toplanır.
 - **PDF:** Önizleme/yazdırma (`printing`) ve dosyaya kaydetme; paylaşım ekranında transkript/özet/PDF paylaşımı.
 - **Hakkında:** Uygulama sürümü ve `showLicensePage` ile lisanslar; ilk açılış tanıtım ekranında sürüm satırı.
@@ -18,7 +18,7 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 
 ## Model dosyası (Whisper)
 
-`assets/models/ggml-tiny-q5_1.bin` dosyasını [Hugging Face `ggerganov/whisper.cpp`](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden indirip `assets/models/` altına koyun. `*.bin` repoda yok (`.gitignore`); analiz uyarısı `analysis_options.yaml` ile kapatıldı, CI’da boş dosya oluşturulur. **Uygulamayı çalıştırmak için** gerçek model dosyası şarttır.
+**Android:** İlk açılışta uygulama, model yoksa **Hugging Face’den indirme** ekranı sunar (~60 MB, HTTPS; `INTERNET` izni). İsterseniz modeli elle de kurabilirsiniz: `assets/models/ggml-base-q5_1.bin` dosyasını [ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden indirip `assets/models/` altına koyun. `*.bin` repoda yok (`.gitignore`); CI’da boş dosya oluşturulur. **Yerelde 0 bayt placeholder ile transkript çalışmaz** — gerçek dosya veya uygulama içi indirme gerekir.
 
 ## Çalıştırma
 
@@ -35,6 +35,12 @@ flutter analyze
 ```
 
 Push ve pull request’lerde GitHub Actions aynı komutları çalıştırır (`.github/workflows/flutter_ci.yml`). Tam **APK/NDK** derlemesi CI’da yoktur; yerelde `flutter build apk` ile deneyebilirsiniz.
+
+## Yapılacaklar (ileride)
+
+1. **Model:** İsteğe bağlı `small` ggml quantize veya uygulama içi model seçimi.
+2. **İçe aktarma:** iOS veya ek biçimler için dönüştürme / net hata mesajları (Android’de m4a vb. MediaCodec ile).
+3. **Türkçe:** Ek normalizasyon (birleşik/ayrık yazım, kullanıcı sözlüğü) ve arama eş anlamlılığı.
 
 ## Platform notu
 

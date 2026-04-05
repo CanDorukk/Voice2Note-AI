@@ -1,3 +1,7 @@
+# Bu dosya, GitHub’a itilmemesi gereken yerel dosyaları (model, anahtar, IDE/Cursor
+# önbelleği, derleme çıktıları, ortam değişkenleri) dışlar. Yine de hassas veriyi
+# repoya yazmayın; .env ve anahtarları asla commit etmeyin.
+
 # Miscellaneous
 *.class
 *.log
@@ -45,10 +49,10 @@ app.*.map.json
 # Android NDK / CMake (yerel derleme; commit etme)
 android/app/.cxx/
 
-# Cursor specific
-
+# Cursor / IDE (yerel ayar ve önbellek; repoda tutulmaz)
 /cursor
 /.cursor
+**/.cursor/
 
 # Secrets / API / Herkese açık olmaması gerekenler
 .env
@@ -64,11 +68,21 @@ android/app/.cxx/
 **/keys/
 *.jks
 *.keystore
+*.pem
+*.p12
+*.pfx
 key.properties
 GoogleService-Info.plist
 google-services.json
+**/serviceAccount*.json
+**/firebase-adminsdk*.json
 **/credentials*
 **/.credentials
+
+# Yerel özel notlar / taslaklar (isteğe bağlı klasör veya uzantı)
+**/PRIVATE/
+**/local_only/
+*.private.md
 
 # Whisper GGML model (büyük; yerel olarak assets/models/ içine kopyala, commit etme)
 assets/models/*.bin

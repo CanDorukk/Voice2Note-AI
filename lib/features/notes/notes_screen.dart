@@ -1,11 +1,20 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
+import 'package:voice_2_note_ai/services/audio_to_note_pipeline.dart';
+import 'package:voice_2_note_ai/services/whisper_audio_import.dart';
+import 'package:voice_2_note_ai/utils/turkish_text.dart';
 
 /// Not listesi ekranı. DB'den notları çeker; boşsa boş durum; arama transkript/özet içinde.
 class NotesScreen extends ConsumerStatefulWidget {
@@ -26,12 +35,107 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   }
 
   List<NoteModel> _filter(List<NoteModel> notes) {
-    final q = _query.trim().toLowerCase();
+    final q = foldTurkishForSearch(_query.trim());
     if (q.isEmpty) return notes;
     return notes.where((n) {
-      return n.transcript.toLowerCase().contains(q) ||
-          n.summary.toLowerCase().contains(q);
+      return foldTurkishForSearch(n.transcript).contains(q) ||
+          foldTurkishForSearch(n.summary).contains(q);
     }).toList();
+  }
+
+  Future<void> _importAudioFromFile(BuildContext context) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final picked = result.files.single;
+    late String workPath;
+    final tempDir = await getTemporaryDirectory();
+    if (picked.bytes != null) {
+      var ext = p.extension(picked.name).toLowerCase();
+      if (ext.isEmpty) {
+        ext = '.m4a';
+      }
+      workPath = p.join(
+        tempDir.path,
+        'pick_${DateTime.now().millisecondsSinceEpoch}$ext',
+      );
+      await File(workPath).writeAsBytes(picked.bytes!);
+    } else if (picked.path != null && picked.path!.isNotEmpty) {
+      workPath = picked.path!;
+    } else {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dosya okunamadı.')),
+      );
+      return;
+    }
+
+    final prepared = await prepareLocalAudioForWhisper(workPath);
+    if (prepared == null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Ses dönüştürülemedi. Dosya bozuk olabilir veya biçim desteklenmiyor.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final support = await getApplicationSupportDirectory();
+    final destPath = p.join(
+      support.path,
+      'imports',
+      'note_${DateTime.now().millisecondsSinceEpoch}.wav',
+    );
+    await Directory(p.dirname(destPath)).create(recursive: true);
+    await File(prepared.wavPath).copy(destPath);
+
+    if (!context.mounted) return;
+    final container = ProviderScope.containerOf(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    ref.read(pendingProcessingProvider.notifier).add(
+          audioPath: destPath,
+          durationSeconds: prepared.durationSeconds,
+          displayLabel: 'Dosyadan',
+        );
+
+    unawaited(
+      runAudioToNotePipeline(
+        container: container,
+        messenger: messenger,
+        audioPath: destPath,
+        durationSeconds: prepared.durationSeconds,
+      ),
+    );
+  }
+
+  Widget _recordFabStack(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        FloatingActionButton.small(
+          heroTag: 'fab_import_audio',
+          tooltip: 'Ses dosyası yükle (m4a, wav, …)',
+          onPressed: () => _importAudioFromFile(context),
+          child: const Icon(Icons.upload_file_rounded),
+        ),
+        const SizedBox(height: 12),
+        FloatingActionButton.extended(
+          heroTag: 'fab_record',
+          tooltip: 'Yeni ses kaydı',
+          onPressed: () => AppNavigation.pushRecording(context),
+          icon: const Icon(Icons.mic_rounded),
+          label: const Text('Kayıt'),
+        ),
+      ],
+    );
   }
 
   Future<void> _showAbout(BuildContext context) async {
@@ -116,12 +220,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         if (notes.isEmpty && pending.isEmpty) {
           return Scaffold(
             appBar: _notesAppBar(context),
-            floatingActionButton: FloatingActionButton.extended(
-              tooltip: 'Yeni ses kaydı',
-              onPressed: () => AppNavigation.pushRecording(context),
-              icon: const Icon(Icons.mic_rounded),
-              label: const Text('Kayıt'),
-            ),
+            floatingActionButton: _recordFabStack(context),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -154,6 +253,21 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                         icon: const Icon(Icons.mic_rounded),
                         label: const Text('Ses kaydı'),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () => _importAudioFromFile(context),
+                      icon: const Icon(Icons.upload_file_rounded),
+                      label: const Text('Ses dosyası yükle'),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Galeri veya dosyalardan ses seçilir; m4a ve wav dahil. '
+                      'Uygulama Whisper için 16 kHz mono WAV’a dönüştürür.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
                   ],
                 ),
@@ -214,12 +328,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
         return Scaffold(
           appBar: _notesAppBar(context, bottom: searchBar),
-          floatingActionButton: FloatingActionButton.extended(
-            tooltip: 'Yeni ses kaydı',
-            onPressed: () => AppNavigation.pushRecording(context),
-            icon: const Icon(Icons.mic_rounded),
-            label: const Text('Kayıt'),
-          ),
+          floatingActionButton: _recordFabStack(context),
           body: RefreshIndicator(
             onRefresh: () => ref.refresh(notesListProvider.future),
             child: ListView(
@@ -248,7 +357,7 @@ class _PendingProcessingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final dur = _fmtDur(item.durationSeconds);
     return Semantics(
-      label: 'Ses kaydı, transkript hazırlanıyor, süre $dur',
+      label: '${item.displayLabel}, transkript hazırlanıyor, süre $dur',
       hint: 'İşlem bitince tam not listede görünür',
       child: ListTile(
         leading: ExcludeSemantics(
@@ -267,7 +376,7 @@ class _PendingProcessingTile extends StatelessWidget {
             ),
           ),
         ),
-        title: const Text('Ses kaydı'),
+        title: Text(item.displayLabel),
         subtitle: const Text('Transkript hazırlanıyor…'),
         trailing: Text(
           dur,

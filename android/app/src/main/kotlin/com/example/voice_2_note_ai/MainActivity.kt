@@ -12,6 +12,40 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
+            CHANNEL_AUDIO,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "convertAudioToWhisperWav" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val args = call.arguments as? Map<*, *>
+                    val inputPath = args?.get("inputPath") as? String
+                    val outputPath = args?.get("outputPath") as? String
+                    if (inputPath.isNullOrBlank() || outputPath.isNullOrBlank()) {
+                        result.error("BAD_ARGS", "inputPath veya outputPath eksik", null)
+                        return@setMethodCallHandler
+                    }
+                    whisperExecutor.execute {
+                        val ok = try {
+                            AudioToWav16kMono.convert(inputPath, outputPath)
+                        } catch (e: Throwable) {
+                            android.util.Log.e(
+                                "Voice2NoteAudio",
+                                "convertAudioToWhisperWav",
+                                e,
+                            )
+                            false
+                        }
+                        runOnUiThread {
+                            result.success(ok)
+                        }
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
             CHANNEL_WHISPER,
         ).setMethodCallHandler { call, result ->
             when (call.method) {
@@ -67,5 +101,6 @@ class MainActivity : FlutterActivity() {
 
     companion object {
         private const val CHANNEL_WHISPER = "com.example.voice_2_note_ai/whisper"
+        private const val CHANNEL_AUDIO = "com.example.voice_2_note_ai/audio"
     }
 }
