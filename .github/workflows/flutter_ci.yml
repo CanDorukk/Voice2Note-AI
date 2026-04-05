@@ -10,8 +10,11 @@ on:
 jobs:
   analyze-and-test:
     runs-on: ubuntu-latest
+    env:
+      # Node 20 tabanlı JS action uyarıları için (checkout vb.); varsayılan Node 24’e geçişe uyum.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Flutter
         uses: subosito/flutter-action@v2
