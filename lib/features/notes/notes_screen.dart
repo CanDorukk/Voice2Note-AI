@@ -151,8 +151,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         const Padding(
           padding: EdgeInsets.only(top: 12),
           child: Text(
-            'Ses kaydı, Whisper transkript ve özet bu cihazda çalışır; '
-            'internet zorunlu değildir.',
+            'Kayıtlarınız ve metinler bu telefonda işlenir; '
+            'sürekli internet gerekmez.',
           ),
         ),
         Align(
@@ -262,8 +262,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Galeri veya dosyalardan ses seçilir; m4a ve wav dahil. '
-                      'Uygulama Whisper için 16 kHz mono WAV’a dönüştürür.',
+                      'Galeriden veya dosyalardan ses seçebilirsiniz '
+                      '(örneğin kayıtlı konuşma). Gerekirse uygun forma çevrilir.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurfaceVariant,

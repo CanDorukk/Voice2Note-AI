@@ -16,9 +16,11 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 - Flutter SDK (pubspec içindeki sürüm aralığı)
 - **Android:** NDK ile `whisper.cpp` native modülü; ayrıntı için `android/app/src/main/cpp/third_party/README.md`
 
-## Model dosyası (Whisper)
+## Ses tanıma paketi (Android)
 
-**Android:** İlk açılış **Splash** ekranında model yoksa **Hugging Face’den indirme** (~60 MB, HTTPS; `INTERNET` izni). İsterseniz modeli elle de kurabilirsiniz: `assets/models/ggml-base-q5_1.bin` dosyasını [ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden indirip `assets/models/` altına koyun. `*.bin` repoda yok (`.gitignore`); CI’da boş dosya oluşturulur. **Yerelde 0 bayt placeholder ile transkript çalışmaz** — gerçek dosya veya uygulama içi indirme gerekir.
+**Uygulama içi:** İlk açılışta tanıtım ekranında, sesinizi yazıya çevirmek için gerekli paket **bir kez** indirilir (yaklaşık 60 MB; Wi‑Fi önerilir). İndirme bitmeden **Başla** düğmesi açılmaz.
+
+**Kaynak kodu / geliştirici:** Paket dosyası repoda yoktur. Yerel derleme veya CI için `assets/models/ggml-base-q5_1.bin` yolunda gerçek dosya gerekir ([ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden `ggml-base-q5_1.bin`). Boş veya 0 baytlık dosya ile çalışmaz; analiz uyarısı `analysis_options.yaml` ile kapatılır, CI’da boş dosya oluşturulur.
 
 ## Çalıştırma
 

@@ -77,7 +77,7 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() {
         _downloading = false;
         _downloadError =
-            'İndirme tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.';
+            'İndirilemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.';
       });
       return;
     }
@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
       _downloading = false;
       _modelReady = path != null && path.isNotEmpty;
       if (!_modelReady) {
-        _downloadError = 'İndirilen dosya doğrulanamadı.';
+        _downloadError = 'Paket doğrulanamadı. Yeniden indirmeyi deneyin.';
       }
     });
   }
@@ -100,6 +100,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
   bool get _needsModelUi =>
       !kIsWeb && Platform.isAndroid && !_modelChecking && !_modelReady;
+
+  /// Android’de konuşmayı yazıya çevirmek için model şart; diğer platformlarda tanıtımı geçmeye izin verilir.
+  bool get _canPressStart {
+    if (_downloading || _modelChecking) return false;
+    if (kIsWeb || !Platform.isAndroid) return true;
+    return _modelReady;
+  }
 
   double? get _progressFraction {
     final t = _total;
@@ -181,7 +188,7 @@ class _SplashScreenState extends State<SplashScreen> {
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                'Model kontrol ediliyor…',
+                                'Hazırlık yapılıyor…',
                                 style: textTheme.bodyMedium?.copyWith(
                                   color: cs.onSurfaceVariant,
                                 ),
@@ -218,8 +225,8 @@ class _SplashScreenState extends State<SplashScreen> {
                                     Expanded(
                                       child: Text(
                                         _modelReady
-                                            ? 'Konuşma modeli hazır'
-                                            : 'Konuşmayı metne çevirmek için model',
+                                            ? 'Ses tanıma hazır'
+                                            : 'Önce ses paketini indirin',
                                         style: textTheme.titleSmall?.copyWith(
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -230,9 +237,9 @@ class _SplashScreenState extends State<SplashScreen> {
                                 const SizedBox(height: 10),
                                 Text(
                                   _modelReady
-                                      ? 'İstediğiniz zaman kayıt veya ses dosyası ekleyebilirsiniz.'
-                                      : 'Tek seferlik indirme (~60 MB, Wi‑Fi önerilir). '
-                                          'İsterseniz README’deki gibi dosyayı elle de kurabilirsiniz.',
+                                      ? 'Kayıt alabilir veya galeriden ses dosyası seçebilirsiniz.'
+                                      : 'Söylediklerinizi yazıya dökmek için bu paket bir kez indirilir '
+                                          '(yaklaşık 60 MB). Mümkünse Wi‑Fi kullanın.',
                                   style: textTheme.bodySmall?.copyWith(
                                     color: cs.onSurfaceVariant,
                                     height: 1.4,
@@ -276,18 +283,10 @@ class _SplashScreenState extends State<SplashScreen> {
                                     FilledButton.tonalIcon(
                                       onPressed: _downloadModel,
                                       icon: const Icon(Icons.cloud_download_rounded),
-                                      label: const Text('Modeli indir'),
+                                      label: const Text('Ses paketini indir'),
                                       style: FilledButton.styleFrom(
                                         minimumSize: const Size.fromHeight(48),
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Model olmadan devam ederseniz transkript üretilmez.',
-                                      style: textTheme.labelSmall?.copyWith(
-                                        color: cs.onSurfaceVariant,
-                                      ),
-                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ],
@@ -300,7 +299,9 @@ class _SplashScreenState extends State<SplashScreen> {
                         height: (constraints.maxHeight * 0.08).clamp(24.0, 80.0),
                       ),
                       FilledButton.icon(
-                        onPressed: _downloading ? null : () => _onStart(context),
+                        onPressed: _canPressStart
+                            ? () => _onStart(context)
+                            : null,
                         icon: const Icon(Icons.arrow_forward_rounded),
                         label: const Text('Başla'),
                         style: FilledButton.styleFrom(
@@ -308,6 +309,21 @@ class _SplashScreenState extends State<SplashScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                       ),
+                      if (!_canPressStart &&
+                          Platform.isAndroid &&
+                          !kIsWeb &&
+                          !_modelChecking) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          _downloading
+                              ? 'İndirme bitince Başla düğmesi açılır.'
+                              : 'Başlamak için önce ses paketini indirin.',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                       const SizedBox(height: 24),
                     ],
                   ),

@@ -24,9 +24,9 @@ Future<void> runAudioToNotePipeline({
       messenger.showSnackBar(
         SnackBar(
           content: const Text(
-            'Whisper modeli yok veya dosya boş. ggml-base-q5_1.bin dosyasını '
-            'Hugging Face (ggerganov/whisper.cpp) üzerinden indirip '
-            'assets/models/ klasörüne koyun; sonra uygulamayı yeniden derleyin.',
+            'Ses tanıma paketi bulunamadı. İlk açılışta indirmeniz gerekir. '
+            'Gerekirse uygulama verilerini temizleyip uygulamayı yeniden açarak '
+            'tanıtım ekranına dönebilirsiniz (Ayarlar > Uygulamalar > bu uygulama > Depolama).',
           ),
           backgroundColor: Colors.red.shade800,
           duration: const Duration(seconds: 8),

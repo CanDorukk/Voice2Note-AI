@@ -96,7 +96,7 @@ class WhisperService {
   }
 
   String _fallbackTranscript() {
-    return 'Transkript alınamadı. Uygulamayı yeniden başlatıp tekrar deneyin.';
+    return 'Konuşma metne çevrilemedi. Uygulamayı kapatıp açmayı deneyin.';
   }
 }
 
