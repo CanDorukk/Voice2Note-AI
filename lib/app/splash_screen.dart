@@ -1,11 +1,14 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/core/constants/app_constants.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_service.dart';
 
-/// Uygulama açılışında gösterilen tanıtım / karşılama ekranı.
-/// Sadece ilk yüklemede gösterilir; "Başla" ile ana sayfaya geçilir ve bir daha gösterilmez.
+/// Tanıtım ekranı. Android’de Whisper modeli yoksa bu ekrandan indirilir.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -15,11 +18,18 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   String? _versionLine;
+  bool _modelChecking = true;
+  bool _modelReady = false;
+  bool _downloading = false;
+  int _received = 0;
+  int? _total;
+  String? _downloadError;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
+    _checkModel();
   }
 
   Future<void> _loadVersion() async {
@@ -30,6 +40,57 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
+  Future<void> _checkModel() async {
+    if (kIsWeb || !Platform.isAndroid) {
+      setState(() {
+        _modelReady = true;
+        _modelChecking = false;
+      });
+      return;
+    }
+    final path = await WhisperModelService.instance.ensureReady();
+    if (!mounted) return;
+    setState(() {
+      _modelReady = path != null && path.isNotEmpty;
+      _modelChecking = false;
+    });
+  }
+
+  Future<void> _downloadModel() async {
+    setState(() {
+      _downloadError = null;
+      _downloading = true;
+      _received = 0;
+      _total = null;
+    });
+    final ok = await WhisperModelService.instance.downloadGgmlBaseQ5FromNetwork(
+      onProgress: (received, total) {
+        if (!mounted) return;
+        setState(() {
+          _received = received;
+          _total = total;
+        });
+      },
+    );
+    if (!mounted) return;
+    if (!ok) {
+      setState(() {
+        _downloading = false;
+        _downloadError =
+            'İndirme tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.';
+      });
+      return;
+    }
+    final path = await WhisperModelService.instance.ensureReady();
+    setState(() {
+      _downloading = false;
+      _modelReady = path != null && path.isNotEmpty;
+      if (!_modelReady) {
+        _downloadError = 'İndirilen dosya doğrulanamadı.';
+      }
+    });
+  }
+
   Future<void> _onStart(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.introSeenKey, true);
@@ -37,59 +98,222 @@ class _SplashScreenState extends State<SplashScreen> {
     AppNavigation.pushNotesReplace(context);
   }
 
+  bool get _needsModelUi =>
+      !kIsWeb && Platform.isAndroid && !_modelChecking && !_modelReady;
+
+  double? get _progressFraction {
+    final t = _total;
+    if (t == null || t <= 0) return null;
+    return (_received / t).clamp(0.0, 1.0);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(flex: 2),
-              Icon(
-                Icons.mic_none_rounded,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Voice2 Note AI',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Sesinizi kaydedin, metne çevirsin, özet çıkarsın.\nTamamen çevrimdışı, gizliliğiniz sizde.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              if (_versionLine != null) ...[
-                const SizedBox(height: 20),
-                Text(
-                  _versionLine!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                      const SizedBox(height: 8),
+                      Center(
+                        child: CircleAvatar(
+                          radius: 44,
+                          backgroundColor: cs.primaryContainer,
+                          child: Icon(
+                            Icons.graphic_eq_rounded,
+                            size: 44,
+                            color: cs.onPrimaryContainer,
+                          ),
+                        ),
                       ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              const Spacer(flex: 2),
-              FilledButton.icon(
-                onPressed: () => _onStart(context),
-                icon: const Icon(Icons.arrow_forward_rounded),
-                label: const Text('Başla'),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Voice2 Note AI',
+                        style: textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Kayıtlarınızı metne dökün, kısa özetler alın.\n'
+                        'Transkript ve özet cihazınızda çalışır.',
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: cs.onSurfaceVariant,
+                          height: 1.35,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      if (_versionLine != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          _versionLine!,
+                          style: textTheme.labelMedium?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      const SizedBox(height: 28),
+                      if (_modelChecking && Platform.isAndroid && !kIsWeb)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: cs.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Model kontrol ediliyor…',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else if (!kIsWeb && Platform.isAndroid) ...[
+                        Card(
+                          margin: EdgeInsets.zero,
+                          elevation: 0,
+                          color: cs.surfaceContainerHighest.withOpacity(0.85),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: cs.outlineVariant.withOpacity(0.45),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      _modelReady
+                                          ? Icons.verified_rounded
+                                          : Icons.model_training_rounded,
+                                      color: _modelReady ? cs.primary : cs.secondary,
+                                      size: 22,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        _modelReady
+                                            ? 'Konuşma modeli hazır'
+                                            : 'Konuşmayı metne çevirmek için model',
+                                        style: textTheme.titleSmall?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  _modelReady
+                                      ? 'İstediğiniz zaman kayıt veya ses dosyası ekleyebilirsiniz.'
+                                      : 'Tek seferlik indirme (~60 MB, Wi‑Fi önerilir). '
+                                          'İsterseniz README’deki gibi dosyayı elle de kurabilirsiniz.',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                    height: 1.4,
+                                  ),
+                                ),
+                                if (_needsModelUi) ...[
+                                  const SizedBox(height: 14),
+                                  if (_downloadError != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: Text(
+                                        _downloadError!,
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: cs.error,
+                                        ),
+                                      ),
+                                    ),
+                                  if (_downloading) ...[
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: LinearProgressIndicator(
+                                        minHeight: 8,
+                                        value: _progressFraction,
+                                        backgroundColor:
+                                            cs.surfaceContainerHigh,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      _total != null && _total! > 0
+                                          ? '${(_received / (1024 * 1024)).toStringAsFixed(1)} / '
+                                              '${(_total! / (1024 * 1024)).toStringAsFixed(1)} MB'
+                                          : 'İndiriliyor…',
+                                      style: textTheme.labelSmall?.copyWith(
+                                        color: cs.onSurfaceVariant,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                  if (!_downloading) ...[
+                                    FilledButton.tonalIcon(
+                                      onPressed: _downloadModel,
+                                      icon: const Icon(Icons.cloud_download_rounded),
+                                      label: const Text('Modeli indir'),
+                                      style: FilledButton.styleFrom(
+                                        minimumSize: const Size.fromHeight(48),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Model olmadan devam ederseniz transkript üretilmez.',
+                                      style: textTheme.labelSmall?.copyWith(
+                                        color: cs.onSurfaceVariant,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      SizedBox(
+                        height: (constraints.maxHeight * 0.08).clamp(24.0, 80.0),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _downloading ? null : () => _onStart(context),
+                        icon: const Icon(Icons.arrow_forward_rounded),
+                        label: const Text('Başla'),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 52),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
               ),
-              const SizedBox(height: 32),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

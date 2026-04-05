@@ -3,7 +3,6 @@ import 'package:voice_2_note_ai/features/export/pdf_preview_screen.dart';
 import 'package:voice_2_note_ai/features/notes/note_detail_screen.dart';
 import 'package:voice_2_note_ai/features/notes/notes_screen.dart';
 import 'package:voice_2_note_ai/features/recording/recording_screen.dart';
-import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_bootstrap.dart';
 import 'package:voice_2_note_ai/features/share/share_preview_screen.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 
@@ -13,9 +12,7 @@ class AppNavigation {
 
   static Future<void> pushNotesReplace(BuildContext context) {
     return Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => const WhisperModelBootstrap(child: NotesScreen()),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const NotesScreen()),
     );
   }
 

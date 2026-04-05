@@ -18,7 +18,7 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 
 ## Model dosyası (Whisper)
 
-**Android:** İlk açılışta uygulama, model yoksa **Hugging Face’den indirme** ekranı sunar (~60 MB, HTTPS; `INTERNET` izni). İsterseniz modeli elle de kurabilirsiniz: `assets/models/ggml-base-q5_1.bin` dosyasını [ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden indirip `assets/models/` altına koyun. `*.bin` repoda yok (`.gitignore`); CI’da boş dosya oluşturulur. **Yerelde 0 bayt placeholder ile transkript çalışmaz** — gerçek dosya veya uygulama içi indirme gerekir.
+**Android:** İlk açılış **Splash** ekranında model yoksa **Hugging Face’den indirme** (~60 MB, HTTPS; `INTERNET` izni). İsterseniz modeli elle de kurabilirsiniz: `assets/models/ggml-base-q5_1.bin` dosyasını [ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden indirip `assets/models/` altına koyun. `*.bin` repoda yok (`.gitignore`); CI’da boş dosya oluşturulur. **Yerelde 0 bayt placeholder ile transkript çalışmaz** — gerçek dosya veya uygulama içi indirme gerekir.
 
 ## Çalıştırma
 

@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_2_note_ai/core/constants/app_constants.dart';
 import 'package:voice_2_note_ai/app/splash_screen.dart';
 import 'package:voice_2_note_ai/features/notes/notes_screen.dart';
-import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_bootstrap.dart';
 
 /// İlk açılışta tanıtımı gösterir, sonraki açılışlarda doğrudan notlar ekranına gider.
 class InitialScreen extends StatelessWidget {
@@ -25,9 +24,7 @@ class InitialScreen extends StatelessWidget {
           );
         }
         final seen = snapshot.data ?? false;
-        return seen
-            ? const WhisperModelBootstrap(child: NotesScreen())
-            : const SplashScreen();
+        return seen ? const NotesScreen() : const SplashScreen();
       },
     );
   }
