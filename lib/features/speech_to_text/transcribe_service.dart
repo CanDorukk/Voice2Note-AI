@@ -9,7 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
 
 /// Transkript: yalnızca kayıtlı HTTP sunucusu (`RemoteTranscribeSettings`).
-class WhisperService {
+class TranscribeService {
   /// Uzun sesler için üst sınır (sunucu hızına bağlı).
   static Duration transcribeTimeoutForAudioSeconds(int? audioDurationSeconds) {
     final d = audioDurationSeconds;
@@ -58,7 +58,7 @@ class WhisperService {
     final timeout = Duration(minutes: timeoutMin);
     if (kDebugMode) {
       debugPrint(
-        'WhisperService: POST $uri (zaman aşımı ${timeout.inMinutes} dk)',
+        'TranscribeService: POST $uri (zaman aşımı ${timeout.inMinutes} dk)',
       );
     }
     try {
@@ -97,7 +97,7 @@ class WhisperService {
           'Sunucunun açık ve aynı ağda olduğundan emin olun.';
     } catch (e, st) {
       if (kDebugMode) {
-        debugPrint('WhisperService._transcribeViaRemoteHttp: $e\n$st');
+        debugPrint('TranscribeService._transcribeViaRemoteHttp: $e\n$st');
       }
       return 'Transkript başarısız: $e';
     }

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:voice_2_note_ai/features/speech_to_text/whisper_service.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/transcribe_service.dart';
 
 /// Speech-to-Text: kayıtlı HTTP sunucusu ile transkript.
 class SpeechToTextService {
@@ -13,8 +13,8 @@ class SpeechToTextService {
       debugPrint('SpeechToTextService.transcribe audioPath: $audioPath');
     }
 
-    final whisper = WhisperService();
-    return whisper.transcribe(
+    final svc = TranscribeService();
+    return svc.transcribe(
       audioPath: audioPath,
       audioDurationSeconds: audioDurationSeconds,
     );
