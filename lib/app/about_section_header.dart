@@ -38,7 +38,7 @@ class AboutSectionHeader extends StatelessWidget {
           Divider(
             height: 1,
             thickness: 1,
-            color: cs.outlineVariant.withOpacity(0.55),
+            color: cs.outlineVariant.withAlphaFactor(0.55),
           ),
         ],
       ),

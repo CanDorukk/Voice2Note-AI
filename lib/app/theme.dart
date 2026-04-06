@@ -14,7 +14,7 @@ ThemeData _buildTheme(Brightness brightness) {
     brightness: brightness,
   );
 
-  final outlineSoft = colorScheme.outline.withOpacity(0.35);
+  final outlineSoft = colorScheme.outline.withAlphaFactor(0.35);
 
   return ThemeData(
     useMaterial3: true,
@@ -33,13 +33,13 @@ ThemeData _buildTheme(Brightness brightness) {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.55)),
+        side: BorderSide(color: colorScheme.outlineVariant.withAlphaFactor(0.55)),
       ),
       color: colorScheme.surfaceContainerLow,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.65),
+      fillColor: colorScheme.surfaceContainerHighest.withAlphaFactor(0.65),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadii.md),
@@ -61,7 +61,7 @@ ThemeData _buildTheme(Brightness brightness) {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     ),
     dividerTheme: DividerThemeData(
-      color: colorScheme.outlineVariant.withOpacity(0.45),
+      color: colorScheme.outlineVariant.withAlphaFactor(0.45),
       space: 1,
     ),
     snackBarTheme: SnackBarThemeData(

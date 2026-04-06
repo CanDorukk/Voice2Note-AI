@@ -19,7 +19,8 @@ jobs:
       - name: Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          # Yerel geliştirme ile uyum: ThemeData.cardTheme/dialogTheme → CardTheme / DialogTheme (3.22 API)
+          flutter-version: '3.22.2'
           cache: true
 
       - run: flutter pub get

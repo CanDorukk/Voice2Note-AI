@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
                               color: cs.surfaceContainerLow,
                               borderRadius: BorderRadius.circular(AppRadii.xl),
                               border: Border.all(
-                                color: cs.outlineVariant.withOpacity(0.45),
+                                color: cs.outlineVariant.withAlphaFactor(0.45),
                               ),
                             ),
                             child: Padding(

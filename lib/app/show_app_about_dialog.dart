@@ -87,7 +87,7 @@ Future<void> showAppAboutDialog(BuildContext context) async {
               ),
               Divider(
                 height: 1,
-                color: cs.outlineVariant.withOpacity(0.45),
+                color: cs.outlineVariant.withAlphaFactor(0.45),
               ),
               Expanded(
                 child: SingleChildScrollView(

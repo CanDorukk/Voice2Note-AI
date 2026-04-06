@@ -187,13 +187,13 @@ class _RecordButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           elevation: isRecording ? 6 : 2,
-          shadowColor: cs.shadow.withOpacity(0.35),
+          shadowColor: cs.shadow.withAlphaFactor(0.35),
           shape: const CircleBorder(),
           child: InkWell(
             onTap: onPressed,
             customBorder: const CircleBorder(),
-            splashColor: cs.error.withOpacity(0.25),
-            highlightColor: cs.error.withOpacity(0.12),
+            splashColor: cs.error.withAlphaFactor(0.25),
+            highlightColor: cs.error.withAlphaFactor(0.12),
             child: Ink(
               width: 96,
               height: 96,
