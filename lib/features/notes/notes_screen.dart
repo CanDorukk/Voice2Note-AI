@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/show_app_about_dialog.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
+import 'package:voice_2_note_ai/app/theme_tokens.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
 import 'package:voice_2_note_ai/features/notes/user_search_synonyms_provider.dart';
@@ -215,58 +216,72 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         final filtered = _filter(notes, searchLookup);
 
         if (notes.isEmpty && pending.isEmpty) {
+          final cs = Theme.of(context).colorScheme;
           return Scaffold(
             appBar: _notesAppBar(context),
             floatingActionButton: _recordFabStack(context),
             body: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.mic_none_rounded,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Henüz not yok',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Sesli not için alttaki Kayıt düğmesine dokunun veya aşağıdan kayda başlayın.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundColor: cs.primaryContainer,
+                          child: Icon(
+                            Icons.mic_none_rounded,
+                            size: 40,
+                            color: cs.onPrimaryContainer,
                           ),
-                    ),
-                    const SizedBox(height: 24),
-                    Tooltip(
-                      message: 'Ses kaydı ekranına git',
-                      child: FilledButton.icon(
-                        onPressed: () => AppNavigation.pushRecording(context),
-                        icon: const Icon(Icons.mic_rounded),
-                        label: const Text('Ses kaydı'),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: () => _importAudioFromFile(context),
-                      icon: const Icon(Icons.upload_file_rounded),
-                      label: const Text('Ses dosyası yükle'),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Galeriden veya dosyalardan ses seçebilirsiniz '
-                      '(örneğin kayıtlı konuşma). Gerekirse uygun forma çevrilir.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Henüz not yok',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Sesli not için Kayıt veya ses dosyası yükleyerek başlayın.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                height: 1.4,
+                              ),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Tooltip(
+                          message: 'Ses kaydı ekranına git',
+                          child: FilledButton.icon(
+                            onPressed: () => AppNavigation.pushRecording(context),
+                            icon: const Icon(Icons.mic_rounded),
+                            label: const Text('Ses kaydı'),
                           ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        OutlinedButton.icon(
+                          onPressed: () => _importAudioFromFile(context),
+                          icon: const Icon(Icons.upload_file_rounded),
+                          label: const Text('Ses dosyası yükle'),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Dosyalardan veya galeriden ses seçebilirsiniz; '
+                          'transkript bilgisayarınızdaki sunucuda yapılır.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                height: 1.35,
+                              ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -274,9 +289,14 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         }
 
         final searchBar = PreferredSize(
-          preferredSize: const Size.fromHeight(52),
+          preferredSize: const Size.fromHeight(56),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
             child: Semantics(
               label: 'Transkript veya özette ara',
               textField: true,
@@ -295,11 +315,6 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                           },
                         )
                       : null,
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  isDense: true,
                 ),
                 onChanged: (v) => setState(() => _query = v),
               ),
@@ -311,7 +326,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           ...pending.map((item) => _PendingProcessingTile(item: item)),
           if (filtered.isEmpty && _query.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.lg,
+              ),
               child: Text(
                 'Bu aramaya uygun not yok.',
                 textAlign: TextAlign.center,
@@ -329,7 +347,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           body: RefreshIndicator(
             onRefresh: () => ref.refresh(notesListProvider.future),
             child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.sm,
+              ),
               children: listChildren,
             ),
           ),
@@ -439,9 +460,14 @@ class _NoteListTile extends ConsumerWidget {
         ? (note.transcript.length > 40 ? '${note.transcript.substring(0, 40)}...' : note.transcript)
         : (note.summary.length > 40 ? '${note.summary.substring(0, 40)}...' : note.summary);
 
+    final cs = Theme.of(context).colorScheme;
     return ListTile(
-      leading: const CircleAvatar(
-        child: Icon(Icons.note_outlined),
+      leading: CircleAvatar(
+        backgroundColor: cs.primaryContainer,
+        child: Icon(
+          Icons.note_outlined,
+          color: cs.onPrimaryContainer,
+        ),
       ),
       title: Text(title.isEmpty ? 'Not ${note.id}' : title),
       subtitle: Text(dateStr),
