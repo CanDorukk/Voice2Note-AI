@@ -11,7 +11,7 @@ import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
-import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_download_section.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/remote_transcribe_settings_section.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/audio_to_note_pipeline.dart';
 import 'package:voice_2_note_ai/services/whisper_audio_import.dart';
@@ -91,7 +91,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  'Ses dosyası Whisper için dönüştürülüyor (m4a vb. → 16 kHz WAV). '
+                  'Ses dosyası sunucuya gönderilmeye hazırlanıyor (m4a vb. → 16 kHz WAV). '
                   'Uzun kayıtlarda birkaç dakika sürebilir.',
                   style: Theme.of(dialogContext).textTheme.bodyMedium,
                 ),
@@ -184,16 +184,16 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       context: rootContext,
       applicationName: 'Voice2 Note AI',
       applicationVersion: '${info.version} (${info.buildNumber})',
-      applicationLegalese: 'Çevrimdışı ses notları',
+      applicationLegalese: 'Özet cihazda; transkript sunucuda',
       children: [
         const Padding(
           padding: EdgeInsets.only(top: 12),
           child: Text(
-            'Kayıtlarınız ve metinler bu telefonda işlenir; '
-            'sürekli internet gerekmez.',
+            'Özet bu cihazda üretilir. Transkript için kayıtlı sunucuya '
+            'bağlanılır (aynı Wi‑Fi veya erişilebilir ağ).',
           ),
         ),
-        const WhisperModelDownloadSection(),
+        const RemoteTranscribeSettingsSection(),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
@@ -429,7 +429,7 @@ class _PendingProcessingTileState extends State<_PendingProcessingTile> {
     final bodySmall = Theme.of(context).textTheme.bodySmall;
     return Semantics(
       label:
-          '${item.displayLabel}, Whisper transkripti çalışıyor, kayıt süresi $dur, geçen ${_fmtElapsed()}',
+          '${item.displayLabel}, transkript sunucuda çalışıyor, kayıt süresi $dur, geçen ${_fmtElapsed()}',
       hint: 'İşlem bitince tam not listede görünür',
       child: ListTile(
         isThreeLine: true,
@@ -451,9 +451,8 @@ class _PendingProcessingTileState extends State<_PendingProcessingTile> {
         ),
         title: Text(item.displayLabel),
         subtitle: Text(
-          'Whisper çevrimdışı transkript (tamamen bu cihazda çalışıyor).\n'
-          'Geçen: ${_fmtElapsed()} · 5 dakikalık ses birçok telefonda 5–20 dakika sürebilir; '
-          'uygulama donmadı.\n'
+          'Transkript kayıtlı sunucuda çalışıyor (bilgisayarınız açık ve aynı ağda olmalı).\n'
+          'Geçen: ${_fmtElapsed()} · Uzun kayıtlar birkaç–on dakika sürebilir; uygulama donmadı.\n'
           'Ses süresi: $dur',
           style: bodySmall?.copyWith(
             color: cs.onSurfaceVariant,

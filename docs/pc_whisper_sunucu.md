@@ -1,6 +1,6 @@
 # PC’de Whisper sunucusu ve uygulama bağlantısı
 
-Telefonda çevrimdışı Whisper çok yavaş veya zaman aşımına düşüyorsa, transkripti **kendi bilgisayarında** (veya ileride bir VPS’te) çalıştırabilirsin. Bu depoda hazır bir **FastAPI + faster-whisper** sunucusu ve Flutter uygulamasında **HTTP ile gönderim** vardır.
+Flutter uygulaması **telefonda Whisper modeli içermez**; transkript yalnızca kayıtlı **HTTP sunucusu** üzerinden yapılır (kendi bilgisayarın veya VPS). Bu depoda hazır **FastAPI + faster-whisper** sunucusu ve uygulama tarafında **multipart ile ses gönderimi** vardır.
 
 ## Ne gerekir?
 

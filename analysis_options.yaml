@@ -1,6 +1,1 @@
 include: package:flutter_lints/flutter.yaml
-
-# ggml-base-q5_1.bin repoda yok (.gitignore); geliştirici/CI ortamında dosya olmayabilir.
-analyzer:
-  errors:
-    asset_does_not_exist: ignore

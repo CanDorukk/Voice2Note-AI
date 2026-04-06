@@ -2,7 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:voice_2_note_ai/core/constants/app_constants.dart';
 
-/// PC / VPS üzerindeki Whisper HTTP API adresi (boş = yalnızca cihaz içi NDK).
+/// PC / VPS üzerindeki transkript HTTP API kök adresi (boş = transkript yapılamaz).
 class RemoteTranscribeSettings {
   RemoteTranscribeSettings._();
 

@@ -84,11 +84,9 @@ google-services.json
 **/local_only/
 *.private.md
 
-# Whisper GGML model (büyük; yerel olarak assets/models/ içine kopyala, commit etme)
+# Eski yerel Whisper / ggml dosyaları (artık kullanılmıyor; yerel kopya varsa commit etme)
 assets/models/*.bin
-
-# whisper.cpp kaynak ağacı (çok büyük; repo dışı kopya/submodule kullanıyorsan aç)
-# android/app/src/main/cpp/third_party/whisper.cpp/
+android/app/src/main/cpp/third_party/
 
 # Python (PC Whisper HTTP sunucusu — venv ve önbellek repoya girmez)
 server/**/.venv/

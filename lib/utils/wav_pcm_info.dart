@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math' show min;
 import 'dart:typed_data';
 
-/// Whisper NDK yolunun beklediği: 16 kHz, mono, 16-bit PCM WAV.
+/// Transkript sunucusu için uygun WAV: 16 kHz, mono, 16-bit PCM.
 class WavPcmInfo {
   const WavPcmInfo({
     required this.ok,

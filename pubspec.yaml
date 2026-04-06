@@ -1,5 +1,5 @@
 name: voice_2_note_ai
-description: "Çevrimdışı ses kaydı, Whisper transkript ve özet notlar (Flutter)."
+description: "Ses kaydı, sunucu tabanlı transkript ve özet notlar (Flutter)."
 publish_to: 'none'
 version: 0.1.0
 
@@ -34,4 +34,3 @@ flutter:
   uses-material-design: true
   assets:
     - assets/fonts/NotoSans-Regular.ttf
-    - assets/models/ggml-base-q5_1.bin

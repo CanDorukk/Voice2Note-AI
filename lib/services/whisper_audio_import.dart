@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:voice_2_note_ai/utils/wav_pcm_info.dart';
 
-/// Whisper NDK için hazır ses: 16 kHz mono PCM WAV yolu ve süre.
+/// Sunucuya gönderilecek ses: 16 kHz mono PCM WAV yolu ve süre.
 class WhisperAudioPrepared {
   const WhisperAudioPrepared({
     required this.wavPath,
@@ -21,7 +21,7 @@ class WhisperAudioPrepared {
 const MethodChannel _kAudioChannel =
     MethodChannel('com.example.voice_2_note_ai/audio');
 
-/// Yerel ses dosyasını Whisper’ın beklediği formata getirir.
+/// Yerel ses dosyasını transkript API’sinin beklediği formata getirir.
 ///
 /// Uygun WAV ise yeniden kodlamaz. Diğer biçimlerde Android’de yerel
 /// MediaExtractor/MediaCodec ile 16 kHz mono WAV üretilir.

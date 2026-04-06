@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_service.dart';
 
-/// Speech-to-Text: Ayarlarda PC sunucu adresi varsa HTTP; yoksa Android NDK Whisper.
+/// Speech-to-Text: kayıtlı HTTP sunucusu ile transkript.
 class SpeechToTextService {
   /// [audioPath] yerel dosya yolu veya `content://` URI olabilir.
-  /// [audioDurationSeconds] Whisper zaman aşımının ses uzunluğuna göre ayarlanması için.
+  /// [audioDurationSeconds] zaman aşımı için tahmini süre.
   Future<String> transcribe({
     required String audioPath,
     int? audioDurationSeconds,
