@@ -14,8 +14,16 @@ class WhisperService {
   static const MethodChannel _channel =
       MethodChannel(kWhisperMethodChannelName);
 
-  /// Native `whisper_full` takılırsa sonsuz bekleme yerine hata dönmek için üst sınır.
-  static const Duration transcribeTimeout = Duration(minutes: 15);
+  /// Sonsuz beklemeyi önlemek için üst sınır; asıl hız model + native ayardan gelir.
+  /// ~ses süresinin 12 katı, en az 15 dk en çok 45 dk.
+  static Duration transcribeTimeoutForAudioSeconds(int? audioDurationSeconds) {
+    final d = audioDurationSeconds;
+    if (d == null || d <= 0) {
+      return const Duration(minutes: 30);
+    }
+    final sec = (d * 12).clamp(900, 2700);
+    return Duration(seconds: sec.toInt());
+  }
 
   /// Model dosyasını (varsa) belleğe yükler; ilk kayıttan önce arka planda çağrılabilir.
   Future<void> warmup() async {
@@ -36,9 +44,21 @@ class WhisperService {
   }
 
   /// [audioPath] bir dosya path'i veya MediaStore `content://` uri olabilir.
-  Future<String> transcribe({required String audioPath}) async {
+  /// [audioDurationSeconds] verilirse transkript zaman aşımı buna göre uzatılır.
+  Future<String> transcribe({
+    required String audioPath,
+    int? audioDurationSeconds,
+  }) async {
     if (kDebugMode) {
       debugPrint('WhisperService.transcribe audioPath: $audioPath');
+    }
+
+    final timeout = transcribeTimeoutForAudioSeconds(audioDurationSeconds);
+    if (kDebugMode) {
+      debugPrint(
+        'WhisperService: transkript zaman aşımı ${timeout.inMinutes} dk '
+        '(ses ~${audioDurationSeconds ?? "?"} sn)',
+      );
     }
 
     final modelPath = await WhisperModelService.instance.ensureReady();
@@ -63,7 +83,7 @@ class WhisperService {
                 'audioPath': audioPath,
               },
             )
-            .timeout(transcribeTimeout);
+            .timeout(timeout);
         if (out != null && out.trim().isNotEmpty) {
           final text = out.trim();
           if (kDebugMode) {
@@ -78,9 +98,13 @@ class WhisperService {
         }
       } on TimeoutException {
         if (kDebugMode) {
-          debugPrint('WhisperService: transkript zaman aşımı (${transcribeTimeout.inMinutes} dk).');
+          debugPrint(
+            'WhisperService: transkript zaman aşımı (${timeout.inMinutes} dk).',
+          );
         }
-        return 'Transkript zaman aşımına uğradı. Daha kısa kayıt deneyin veya uygulamayı yeniden başlatın.';
+        return 'Transkript zaman aşımına uğradı (${timeout.inMinutes} dk). '
+            'Uzun kayıtlar veya yavaş cihazda daha da sürebilir; daha kısa ses deneyin '
+            'veya uygulamayı yeniden başlatıp tekrar deneyin.';
       } on PlatformException catch (e, st) {
         if (kDebugMode) {
           debugPrint('WhisperService PlatformException: $e\n$st');

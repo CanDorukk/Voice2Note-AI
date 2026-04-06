@@ -16,7 +16,7 @@ class WhisperModelDownloadSection extends StatefulWidget {
 
 class _WhisperModelDownloadSectionState
     extends State<WhisperModelDownloadSection> {
-  WhisperGgmlModel _kind = WhisperGgmlModel.base;
+  WhisperGgmlModel _kind = WhisperGgmlModel.small;
   bool _checking = true;
   bool _modelReady = false;
   bool _downloading = false;

@@ -381,10 +381,31 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   }
 }
 
-class _PendingProcessingTile extends StatelessWidget {
+class _PendingProcessingTile extends StatefulWidget {
   const _PendingProcessingTile({required this.item});
 
   final PendingProcessingItem item;
+
+  @override
+  State<_PendingProcessingTile> createState() => _PendingProcessingTileState();
+}
+
+class _PendingProcessingTileState extends State<_PendingProcessingTile> {
+  Timer? _elapsedTicker;
+
+  @override
+  void initState() {
+    super.initState();
+    _elapsedTicker = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _elapsedTicker?.cancel();
+    super.dispose();
+  }
 
   static String _fmtDur(int seconds) {
     final m = seconds ~/ 60;
@@ -392,13 +413,26 @@ class _PendingProcessingTile extends StatelessWidget {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  String _fmtElapsed() {
+    final start = DateTime.fromMillisecondsSinceEpoch(widget.item.startedAtMs);
+    final d = DateTime.now().difference(start);
+    final m = d.inMinutes;
+    final s = d.inSeconds % 60;
+    return '$m dk ${s.toString().padLeft(2, '0')} sn';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final item = widget.item;
     final dur = _fmtDur(item.durationSeconds);
+    final cs = Theme.of(context).colorScheme;
+    final bodySmall = Theme.of(context).textTheme.bodySmall;
     return Semantics(
-      label: '${item.displayLabel}, transkript hazırlanıyor, süre $dur',
+      label:
+          '${item.displayLabel}, Whisper transkripti çalışıyor, kayıt süresi $dur, geçen ${_fmtElapsed()}',
       hint: 'İşlem bitince tam not listede görünür',
       child: ListTile(
+        isThreeLine: true,
         leading: ExcludeSemantics(
           child: SizedBox(
             width: 40,
@@ -409,19 +443,26 @@ class _PendingProcessingTile extends StatelessWidget {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: cs.primary,
                 ),
               ),
             ),
           ),
         ),
         title: Text(item.displayLabel),
-        subtitle: const Text('Transkript hazırlanıyor…'),
+        subtitle: Text(
+          'Whisper çevrimdışı transkript (tamamen bu cihazda çalışıyor).\n'
+          'Geçen: ${_fmtElapsed()} · 5 dakikalık ses birçok telefonda 5–20 dakika sürebilir; '
+          'uygulama donmadı.\n'
+          'Ses süresi: $dur',
+          style: bodySmall?.copyWith(
+            color: cs.onSurfaceVariant,
+            height: 1.35,
+          ),
+        ),
         trailing: Text(
           dur,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+          style: bodySmall?.copyWith(color: cs.onSurfaceVariant),
         ),
       ),
     );

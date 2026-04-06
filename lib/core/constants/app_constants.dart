@@ -5,6 +5,6 @@ class AppConstants {
   /// SharedPreferences: tanıtım ekranı bir kez gösterildi mi?
   static const String introSeenKey = 'intro_seen';
 
-  /// SharedPreferences: `WhisperGgmlModel.name` (`base` | `small`).
+  /// SharedPreferences: `WhisperGgmlModel.name` (`tiny` | `base` | `small`).
   static const String whisperGgmlModelKey = 'whisper_ggml_model';
 }

@@ -4,15 +4,19 @@ import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_constants.
 
 /// İndirilebilir Whisper ggml quantize varyantı (`ggerganov/whisper.cpp` ana dal).
 enum WhisperGgmlModel {
-  /// `ggml-base-q5_1.bin` — daha az yer, daha hızlı.
+  /// `ggml-tiny-q5_1.bin` — en hızlı; Türkçe ve uzun kayıtta hatalar/ halüsinasyon riski base’e göre yüksektir.
+  tiny,
+
+  /// `ggml-base-q5_1.bin` — dengeli.
   base,
 
-  /// `ggml-small-q5_1.bin` — daha doğru, çok daha büyük dosya.
+  /// `ggml-small-q5_1.bin` — uygulama varsayılanı; en iyi doğruluk, en ağır ve en yavaş.
   small,
 }
 
 extension WhisperGgmlModelX on WhisperGgmlModel {
   String get storageFileName => switch (this) {
+        WhisperGgmlModel.tiny => 'ggml-tiny-q5_1.bin',
         WhisperGgmlModel.base => 'ggml-base-q5_1.bin',
         WhisperGgmlModel.small => 'ggml-small-q5_1.bin',
       };
@@ -21,12 +25,14 @@ extension WhisperGgmlModelX on WhisperGgmlModel {
   String get huggingFaceFileName => storageFileName;
 
   int get minValidBytes => switch (this) {
+        WhisperGgmlModel.tiny => kWhisperGgmlTinyQ5MinBytes,
         WhisperGgmlModel.base => kWhisperGgmlBaseQ5MinBytes,
         WhisperGgmlModel.small => kWhisperGgmlSmallQ5MinBytes,
       };
 
   /// Yerel geliştirme için yalnızca base asset olarak paketlenebilir.
   String? get bundledAssetPath => switch (this) {
+        WhisperGgmlModel.tiny => null,
         WhisperGgmlModel.base => 'assets/models/ggml-base-q5_1.bin',
         WhisperGgmlModel.small => null,
       };
@@ -36,12 +42,13 @@ extension WhisperGgmlModelX on WhisperGgmlModel {
 
   /// Kullanıcıya gösterilecek yaklaşık indirme boyutu (MB).
   int get approxDownloadMegabytes => switch (this) {
+        WhisperGgmlModel.tiny => 30,
         WhisperGgmlModel.base => 60,
         WhisperGgmlModel.small => 190,
       };
 }
 
-/// Tanıtım / Hakkında: model ailesi seçimi (Base vs Small).
+/// Tanıtım / Hakkında: model seçimi (Tiny / Base / Small; varsayılan Small).
 class WhisperGgmlModelSegmentedButton extends StatelessWidget {
   const WhisperGgmlModelSegmentedButton({
     super.key,
@@ -61,14 +68,19 @@ class WhisperGgmlModelSegmentedButton extends StatelessWidget {
       child: SegmentedButton<WhisperGgmlModel>(
         segments: const [
           ButtonSegment<WhisperGgmlModel>(
+            value: WhisperGgmlModel.tiny,
+            label: Text('Tiny'),
+            tooltip: 'En hızlı; doğruluk için Base deneyin',
+          ),
+          ButtonSegment<WhisperGgmlModel>(
             value: WhisperGgmlModel.base,
             label: Text('Base'),
-            tooltip: 'Daha küçük paket, genelde daha hızlı',
+            tooltip: 'Daha iyi doğruluk, daha yavaş',
           ),
           ButtonSegment<WhisperGgmlModel>(
             value: WhisperGgmlModel.small,
             label: Text('Small'),
-            tooltip: 'Daha büyük paket, genelde daha doğru',
+            tooltip: 'Varsayılan — en iyi doğruluk, en yavaş, ~190 MB',
           ),
         ],
         selected: {selected},

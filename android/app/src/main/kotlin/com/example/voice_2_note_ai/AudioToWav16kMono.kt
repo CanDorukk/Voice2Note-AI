@@ -151,6 +151,22 @@ object AudioToWav16kMono {
                         outIndex >= 0 -> {
                             val outBuf = decoder.getOutputBuffer(outIndex)!!
                             val fmt = decoder.outputFormat
+                            // Her çıkış tamponu, o anki çıkış biçimine göre yorumlanmalı.
+                            // Yalnızca inputFormat veya INFO_OUTPUT_FORMAT_CHANGED ile gelen
+                            // kaynak kanal sayısını kullanmak, ilk buffer'larda stereo'yu mono
+                            // sanmayı tetikleyebilir; Whisper'a bozuk PCM gider.
+                            val outChannels = if (fmt.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
+                                fmt.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                            } else {
+                                sourceChannels.coerceAtLeast(1)
+                            }
+                            val outRate = if (fmt.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                                fmt.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                            } else {
+                                sourceSampleRate
+                            }
+                            sourceChannels = outChannels.coerceAtLeast(1)
+                            sourceSampleRate = outRate
                             val enc = if (fmt.containsKey(MediaFormat.KEY_PCM_ENCODING)) {
                                 fmt.getInteger(MediaFormat.KEY_PCM_ENCODING)
                             } else {
@@ -185,7 +201,7 @@ object AudioToWav16kMono {
                                 }
                             }
 
-                            appendAndFlushMono(chunk, sourceChannels)
+                            appendAndFlushMono(chunk, outChannels.coerceAtLeast(1))
 
                             val eos = bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0
                             decoder.releaseOutputBuffer(outIndex, false)

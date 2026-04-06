@@ -11,4 +11,9 @@ void main() {
     expect(kWhisperGgmlSmallQ5MinBytes, greaterThan(kWhisperGgmlBaseQ5MinBytes));
     expect(kWhisperGgmlSmallQ5MinBytes, 160 * 1024 * 1024);
   });
+
+  test('kWhisperGgmlTinyQ5MinBytes en küçük eşik', () {
+    expect(kWhisperGgmlTinyQ5MinBytes, lessThan(kWhisperGgmlBaseQ5MinBytes));
+    expect(kWhisperGgmlTinyQ5MinBytes, 22 * 1024 * 1024);
+  });
 }

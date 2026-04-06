@@ -17,19 +17,54 @@ class WhisperModelService {
 
   static const String _diskRelativeDir = 'whisper';
 
-  /// Eski sürüm dosya adları (tek seferlik temizlik).
+  /// Eski sürüm dosya adları (tek seferlik temizlik). `ggml-tiny-q5_1.bin` burada
+  /// olmamalı — seçilen model dosyası silinir.
   static const List<String> _legacyDiskFileNames = [
     'ggml-tiny.bin',
-    'ggml-tiny-q5_1.bin',
   ];
+
+  /// Tercih kaydı yokken diskte hangi modelin hazır olduğunu bulur (Small > Base > Tiny).
+  Future<WhisperGgmlModel?> _firstCompleteModelOnDisk() async {
+    final base = await getApplicationDocumentsDirectory();
+    final dir = p.join(base.path, _diskRelativeDir);
+    const order = [
+      WhisperGgmlModel.small,
+      WhisperGgmlModel.base,
+      WhisperGgmlModel.tiny,
+    ];
+    for (final model in order) {
+      final f = File(p.join(dir, model.storageFileName));
+      if (!await f.exists()) continue;
+      final len = await f.length();
+      if (len >= model.minValidBytes) {
+        return model;
+      }
+    }
+    return null;
+  }
 
   Future<WhisperGgmlModel> getSelectedModel() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(AppConstants.whisperGgmlModelKey);
-    if (raw == WhisperGgmlModel.small.name) {
-      return WhisperGgmlModel.small;
+    if (raw != null) {
+      switch (raw) {
+        case 'small':
+          return WhisperGgmlModel.small;
+        case 'base':
+          return WhisperGgmlModel.base;
+        case 'tiny':
+          return WhisperGgmlModel.tiny;
+        default:
+          return WhisperGgmlModel.small;
+      }
     }
-    return WhisperGgmlModel.base;
+    // Kayıtlı tercih yok: önce mevcut dosya (yükseltmede yalnızca Tiny varken takılmayı önle).
+    final onDisk = await _firstCompleteModelOnDisk();
+    if (onDisk != null) {
+      return onDisk;
+    }
+    // Yeni kurulum: en iyi doğruluk (Small); kullanıcı splash’tan indirir.
+    return WhisperGgmlModel.small;
   }
 
   Future<void> setSelectedModel(WhisperGgmlModel model) async {

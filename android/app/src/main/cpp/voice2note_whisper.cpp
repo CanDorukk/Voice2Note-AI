@@ -275,8 +275,11 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
     return load_err;
   }
 
+  // Mobil CPU’da beam search (özellikle beam>1) gerçek zamanın çok üstünde süre yaratır.
+  // Greedy + best_of=1 en hızlı seçenek; kalite için gerekirse ileride beam veya tiny/small ayrımı yapılabilir.
   whisper_full_params params =
-      whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH);
+      whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
+  params.greedy.best_of = 1;
   params.print_progress = false;
   params.print_realtime = false;
   params.print_timestamps = false;
@@ -284,20 +287,19 @@ std::string TranscribeWithWhisperCpp(const std::string &model,
   params.no_timestamps = true;
   // Uzun kayıtlarda segment bazlı çözümleme; metin yine tüm segmentlerden birleştirilir.
   params.single_segment = false;
-  // Önceki metin bağlamı sonraki segmente ipucu verir (daha tutarlı çıktı).
+  // Önceki segment bağlamı: mobilde biraz daha CPU, uzun kayıtta tutarlılık ve Türkçe için genelde gerekli.
   params.no_context = false;
   params.suppress_nst = true;
-  params.beam_search.beam_size = 5;
   params.language = "tr";
-  // Kısa alan ipucu (UTF-8 kaynak dosyası): Türkçe dağılıma yönlendirir.
-  params.initial_prompt = "Bu kayıt Türkçe konuşma içerir.";
+  // İstemci tarafında dil zaten "tr"; boş prompt biraz CPU tasarrufu sağlar.
+  params.initial_prompt = nullptr;
   {
     int n_threads = static_cast<int>(std::thread::hardware_concurrency());
     if (n_threads < 1) {
       n_threads = 1;
     }
-    if (n_threads > 8) {
-      n_threads = 8;
+    if (n_threads > 16) {
+      n_threads = 16;
     }
     params.n_threads = n_threads;
   }

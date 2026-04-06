@@ -19,7 +19,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   String? _versionLine;
-  WhisperGgmlModel _kind = WhisperGgmlModel.base;
+  WhisperGgmlModel _kind = WhisperGgmlModel.small;
   bool _modelChecking = true;
   bool _modelReady = false;
   bool _downloading = false;

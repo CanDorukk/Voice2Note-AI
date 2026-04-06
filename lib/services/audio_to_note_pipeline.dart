@@ -36,7 +36,10 @@ Future<void> runAudioToNotePipeline({
       return;
     }
 
-    final transcript = await stt.transcribe(audioPath: audioPath);
+    final transcript = await stt.transcribe(
+      audioPath: audioPath,
+      audioDurationSeconds: durationSeconds,
+    );
     final summary = await summarizer.summarize(transcript);
 
     await container.read(noteRepositoryProvider).insert(
