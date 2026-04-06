@@ -11,6 +11,8 @@ import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
+import 'package:voice_2_note_ai/features/notes/turkish_search_synonyms_section.dart';
+import 'package:voice_2_note_ai/features/notes/user_search_synonyms_provider.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/remote_transcribe_settings_section.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/audio_to_note_pipeline.dart';
@@ -35,12 +37,28 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     super.dispose();
   }
 
-  List<NoteModel> _filter(List<NoteModel> notes) {
-    final q = normalizeForTurkishSearch(_query.trim());
+  List<NoteModel> _filter(
+    List<NoteModel> notes,
+    Map<String, String> searchLookup,
+  ) {
+    final q = normalizeForTurkishSearch(
+      _query.trim(),
+      useSearchSynonyms: true,
+      synonymLookup: searchLookup,
+    );
     if (q.isEmpty) return notes;
     return notes.where((n) {
-      return normalizeForTurkishSearch(n.transcript).contains(q) ||
-          normalizeForTurkishSearch(n.summary).contains(q);
+      final t = normalizeForTurkishSearch(
+        n.transcript,
+        useSearchSynonyms: true,
+        synonymLookup: searchLookup,
+      );
+      final s = normalizeForTurkishSearch(
+        n.summary,
+        useSearchSynonyms: true,
+        synonymLookup: searchLookup,
+      );
+      return t.contains(q) || s.contains(q);
     }).toList();
   }
 
@@ -154,6 +172,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           ),
         ),
         const RemoteTranscribeSettingsSection(),
+        const TurkishSearchSynonymsSection(),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
@@ -214,7 +233,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       ),
       data: (notes) {
         final pending = ref.watch(pendingProcessingProvider);
-        final filtered = _filter(notes);
+        final searchLookup = ref.watch(turkishSearchLookupProvider);
+        final filtered = _filter(notes, searchLookup);
 
         if (notes.isEmpty && pending.isEmpty) {
           return Scaffold(

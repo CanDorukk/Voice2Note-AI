@@ -10,4 +10,8 @@ class AppConstants {
 
   /// İsteğe bağlı; PC sunucusunda `V2N_API_KEY` ile eşleşmeli.
   static const String remoteTranscribeApiKeyKey = 'remote_transcribe_api_key';
+
+  /// Not araması: kullanıcı eş anlamlı satırları (çok satırlı metin).
+  static const String turkishSearchUserSynonymsRawKey =
+      'turkish_search_user_synonyms_raw';
 }
