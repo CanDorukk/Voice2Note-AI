@@ -5,6 +5,7 @@ Flutter uygulaması **telefonda Whisper modeli içermez**; transkript yalnızca 
 ## Ne gerekir?
 
 - **Windows / Linux / macOS** üzerinde **Python 3.10+**
+- **ffmpeg** yüklü ve **PATH**’te olmalı (sunucu tüm ses biçimlerini 16 kHz mono WAV’a çevirir). Windows: [ffmpeg.org](https://ffmpeg.org/download.html) veya `winget install ffmpeg`.
 - İsteğe bağlı: **NVIDIA GPU** + güncel sürücü (CUDA varsa transkript çok hızlanır; yoksa CPU ile de çalışır)
 - Telefon ve bilgisayarın **aynı Wi‑Fi** ağında olması (veya tünel / VPN ile erişim)
 - Uygulama tarafında **İnternet** izni (zaten manifestte var)
@@ -87,12 +88,12 @@ Sunucu adresin örnek: `http://192.168.1.105:8787`
 
 ## 5) Uygulamada adresi kaydet
 
-1. Uygulamayı aç → **Hakkında** (veya ses paketi bölümünün olduğu ekran).
-2. **PC sunucu** alanına kök adresi yaz: `http://192.168.1.105:8787` (sonunda `/` olmasın zorunluluğu yok; uygulama `/transcribe` yolunu ekler).
+1. Uygulamayı aç → **Hakkında**.
+2. **Transkript sunucusu** (kök adres) alanına yaz: `http://192.168.1.105:8787` (sonunda `/` olmasın zorunluluğu yok; uygulama `/transcribe` yolunu ekler).
 3. API anahtarı kullandıysan **API anahtarı** alanına aynı değeri yaz.
 4. **Sunucu ayarını kaydet**’e bas.
 
-Bundan sonra transkript **önce bu adrese** gönderilir; adres boşsa eskisi gibi **telefondaki NDK Whisper** kullanılır.
+Bundan sonra transkript **bu adrese** gönderilir. Adres boşsa uygulama transkript başlatmaz (Hakkında’dan sunucu adresini kaydetmen gerekir). Mobil uygulama model çalıştırmaz.
 
 ### Uzaktan transkript notları
 
@@ -123,7 +124,7 @@ JSON içinde `text` alanı görünmeli.
 | `Connection refused` | `uvicorn` `--host 0.0.0.0` ile çalışmıyor |
 | `500` + `cublas64_12.dll` / CUDA | GPU sürücü veya cuBLAS eksik; güncel `main.py` varsayılan **CPU** kullanır — `uvicorn`’u yeniden başlat |
 | Çok yavaş | CPU kullanılıyor; mümkünse NVIDIA + tam CUDA kurulumu ve `V2N_DEVICE=cuda` veya `V2N_MODEL=tiny` (kalite düşer) |
-| İlk kurulum uzun | Model indiriliyor; `small` birkaç yüz MB |
+| İlk kurulum uzun | Sunucuda (PC) model ilk kez indiriliyor olabilir; `small` birkaç yüz MB |
 
 ## Güvenlik
 

@@ -1,50 +1,63 @@
 # Voice2 Note AI
 
-Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (TextRank) → SQLite notlar.
+**Sürüm:** `0.1.0` (kaynak: [`pubspec.yaml`](pubspec.yaml) — yayın öncesi sürüm numarası oradan takip edilir.)
 
-## Özellikler (özet)
+Flutter ile yazılmış bir **ses notu** uygulaması: mikrofon veya dosyadan ses → **transkript** (kendi ağınızdaki HTTP sunucusu üzerinden) → **özet** (TextRank) → **SQLite** ile yerel notlar. Uygulama paketinde **Whisper / ggml modeli yoktur**; transkript tamamen sunucu tarafında yapılır.
 
-- **Tema:** Sistem, açık veya koyu; tercih cihazda saklanır ve ana ekranlarda menüden değiştirilebilir.
-- **Notlar:** Liste; transkript/özet araması; detayda **düzenleme** (kaydet), kopyalama, ses oynatma; silmeden sonra SnackBar ile **geri al**.
-- **Kayıt / dosya:** Mikrofon kaydı veya dosya seçicide **yalnızca ses** (ör. m4a, wav); Android’de gerekirse `AudioToWav16kMono` ile 16 kHz mono PCM WAV’a dönüştürülür. Arka planda aynı işlem (`audio_to_note_pipeline.dart`) transkript + özet + veritabanı. Bekleyen satırlar `pending_processing_provider.dart`.
-- **Gezinme:** Ana `MaterialPageRoute` geçişleri `lib/app/app_navigation.dart` içinde toplanır.
-- **PDF:** Önizleme/yazdırma (`printing`) ve dosyaya kaydetme; paylaşım ekranında transkript/özet/PDF paylaşımı.
-- **Hakkında:** Uygulama sürümü ve `showLicensePage` ile lisanslar; Android’de ses tanıma paketi için **Base / Small** seçimi, durum ve indirme / yeniden indirme.
+## Mimari (özet)
+
+| Bileşen | Rol |
+|--------|-----|
+| **Flutter uygulaması** | Kayıt, not listesi, arama, PDF, tema; transkript için `POST …/transcribe` ile ses dosyası gönderir. |
+| **PC / VPS API** | Bu repodaki [`server/pc_whisper_server`](server/pc_whisper_server) örneği: `ffmpeg` ile sesi normalize eder, **faster-whisper** ile metin üretir. |
+
+Ayrıntılı kurulum ve güvenlik için: **[docs/pc_whisper_sunucu.md](docs/pc_whisper_sunucu.md)**  
+Sunucu klasörü kısa özeti: **[server/pc_whisper_server/README.md](server/pc_whisper_server/README.md)**
+
+## Özellikler
+
+- Tema (sistem / açık / koyu), not listesi, transkript ve özet üzerinden arama
+- Not detayında düzenleme, kopyalama, ses oynatma, PDF ve paylaşım
+- **Hakkında** ekranında transkript sunucusu adresi ve isteğe bağlı API anahtarı
+- Android’de odak; iOS bu repoda tam kapsamlı değildir
 
 ## Gereksinimler
 
-- Flutter SDK (pubspec içindeki sürüm aralığı)
-- **Android:** NDK ile `whisper.cpp` native modülü; ayrıntı için `android/app/src/main/cpp/third_party/README.md`
+- **Flutter:** `pubspec.yaml` içindeki SDK aralığı (`>=3.4.3 <4.0.0`)
+- **Transkript:** Telefon ve sunucunun aynı Wi‑Fi veya erişilebilir ağda olması; sunucuda **Python 3.10+**, **ffmpeg** (PATH), isteğe bağlı NVIDIA/CUDA
 
-## Ses tanıma paketi (Android)
-
-**Uygulama içi:** Tanıtım ve **Hakkında** ekranında **Base** (~60 MB) veya **Small** (~190 MB) `ggml-*-q5_1` paketinden biri seçilir; indirme bitmeden **Başla** açılmaz. Small yalnızca ağdan indirilir (APK’ya gömülü değildir). Paket eksik veya bozuksa **Hakkında** üzerinden de indirilebilir veya yeniden indirilebilir.
-
-**Kaynak kodu / geliştirici:** Paket dosyası repoda yoktur. Yerel derleme veya CI için `assets/models/ggml-base-q5_1.bin` yolunda gerçek dosya gerekir ([ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden `ggml-base-q5_1.bin`). Boş veya 0 baytlık dosya ile çalışmaz; analiz uyarısı `analysis_options.yaml` ile kapatılır, CI’da boş dosya oluşturulur.
-
-## Çalıştırma
+## Uygulamayı çalıştırma
 
 ```bash
+git clone <bu-depo-url>
+cd voice_2_note_ai
 flutter pub get
 flutter run
 ```
 
-## Test
+Önce sunucuyu açıp uygulamada **Hakkında** bölümünden taban URL’yi kaydetmeniz gerekir (örn. `http://192.168.1.10:8787`).
 
-```bash
-flutter test
-flutter analyze
+## Sunucuyu çalıştırma (özet)
+
+```powershell
+cd server\pc_whisper_server
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8787
 ```
 
-Push ve pull request’lerde GitHub Actions aynı komutları çalıştırır (`.github/workflows/flutter_ci.yml`). Tam **APK/NDK** derlemesi CI’da yoktur; yerelde `flutter build apk` ile deneyebilirsiniz.
+Tam adımlar, güvenlik duvarı ve ortam değişkenleri için **[docs/pc_whisper_sunucu.md](docs/pc_whisper_sunucu.md)** dosyasına bakın.
 
-## Yapılacaklar (ileride)
+## Geliştirme ve kalite
 
-1. **İçe aktarma:** iOS veya ek biçimler için dönüştürme / net hata mesajları (Android’de m4a vb. MediaCodec ile).
-2. **Türkçe (ileri):** Arama eş anlamlılığı veya kullanıcı sözlüğü; not araması ve TextRank için `normalizeForTurkishSearch` ile birleşik/ayrık yazım ve Latin uzantı harfleri zaten uygulanıyor.
+```bash
+flutter analyze
+flutter test
+```
 
-**Tamamlanan (referans):** Android’de **Base/Small** ggml seçimi (SharedPreferences), tanıtım + Hakkında’da indirme; paket yeniden indirme.
+CI: [`.github/workflows/flutter_ci.yml`](.github/workflows/flutter_ci.yml)
 
-## Platform notu
+## Lisans
 
-Çevrimdışı Whisper şu an **Android** hedefi için yapılandırılmıştır; iOS tarafı bu aşamada öncelikli değildir.
+Depo kökündeki [LICENSE](LICENSE) dosyasına bakın.

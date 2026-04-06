@@ -4,6 +4,8 @@ Kurulum ve uygulama bağlantısı için ana dokümantasyon:
 
 **[docs/pc_whisper_sunucu.md](../../docs/pc_whisper_sunucu.md)**
 
+Sunucu ses dosyalarını **ffmpeg** ile normalize eder; bilgisayarda `ffmpeg` kurulu ve **PATH**’te olmalı.
+
 Özet (önce `server\pc_whisper_server` klasörüne `cd` et):
 
 ```powershell

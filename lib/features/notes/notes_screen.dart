@@ -14,7 +14,7 @@ import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart'
 import 'package:voice_2_note_ai/features/speech_to_text/remote_transcribe_settings_section.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/audio_to_note_pipeline.dart';
-import 'package:voice_2_note_ai/services/whisper_audio_import.dart';
+import 'package:voice_2_note_ai/utils/audio_duration_probe.dart';
 import 'package:voice_2_note_ai/utils/turkish_text.dart';
 
 /// Not listesi ekranı. DB'den notları çeker; boşsa boş durum; arama transkript/özet içinde.
@@ -74,64 +74,24 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       return;
     }
 
-    if (!context.mounted) return;
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          content: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(strokeWidth: 2.5),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Ses dosyası sunucuya gönderilmeye hazırlanıyor (m4a vb. → 16 kHz WAV). '
-                  'Uzun kayıtlarda birkaç dakika sürebilir.',
-                  style: Theme.of(dialogContext).textTheme.bodyMedium,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    WhisperAudioPrepared? prepared;
-    try {
-      prepared = await prepareLocalAudioForWhisper(workPath);
-    } finally {
-      if (context.mounted) {
-        final nav = Navigator.of(context, rootNavigator: true);
-        if (nav.canPop()) nav.pop();
-      }
+    var ext = p.extension(picked.name).toLowerCase();
+    if (ext.isEmpty) {
+      ext = p.extension(workPath).toLowerCase();
     }
-
-    if (prepared == null) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Ses dönüştürülemedi. Dosya bozuk olabilir veya biçim desteklenmiyor.',
-          ),
-        ),
-      );
-      return;
+    if (ext.isEmpty) {
+      ext = '.m4a';
     }
 
     final support = await getApplicationSupportDirectory();
     final destPath = p.join(
       support.path,
       'imports',
-      'note_${DateTime.now().millisecondsSinceEpoch}.wav',
+      'note_${DateTime.now().millisecondsSinceEpoch}$ext',
     );
     await Directory(p.dirname(destPath)).create(recursive: true);
-    await File(prepared.wavPath).copy(destPath);
+    await File(workPath).copy(destPath);
+
+    final durationSeconds = await probeAudioDurationSeconds(destPath);
 
     if (!context.mounted) return;
     final container = ProviderScope.containerOf(context);
@@ -139,7 +99,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
     ref.read(pendingProcessingProvider.notifier).add(
           audioPath: destPath,
-          durationSeconds: prepared.durationSeconds,
+          durationSeconds: durationSeconds,
           displayLabel: 'Dosyadan',
         );
 
@@ -148,7 +108,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         container: container,
         messenger: messenger,
         audioPath: destPath,
-        durationSeconds: prepared.durationSeconds,
+        durationSeconds: durationSeconds,
       ),
     );
   }
