@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:voice_2_note_ai/app/app_icons.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/app/theme_tokens.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
@@ -36,7 +37,7 @@ class SharePreviewScreen extends StatelessWidget {
           children: [
             NotePreviewSectionCard(
               title: 'Transkript',
-              icon: Icons.mic_none_rounded,
+              icon: AppIcons.transcriptSection,
               child: Text(
                 note.transcript.trim().isEmpty
                     ? 'Transkript henüz hazır değil.'
@@ -46,7 +47,7 @@ class SharePreviewScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             NotePreviewSectionCard(
               title: 'Özet',
-              icon: Icons.lightbulb_outline_rounded,
+              icon: AppIcons.summarySection,
               child: Text(
                 note.summary.trim().isEmpty
                     ? 'Özet henüz hazır değil.'
@@ -60,12 +61,12 @@ class SharePreviewScreen extends StatelessWidget {
               children: [
                 OutlinedButton.icon(
                   onPressed: () => shareService.shareTranscript(note.transcript),
-                  icon: const Icon(Icons.share_rounded),
+                  icon: const Icon(AppIcons.share),
                   label: const Text('Transkripti paylaş'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => shareService.shareSummary(note.summary),
-                  icon: const Icon(Icons.share_rounded),
+                  icon: const Icon(AppIcons.share),
                   label: const Text('Özeti paylaş'),
                 ),
                 OutlinedButton.icon(
@@ -93,7 +94,7 @@ class SharePreviewScreen extends StatelessWidget {
                       );
                     }
                   },
-                  icon: const Icon(Icons.picture_as_pdf_rounded),
+                  icon: const Icon(AppIcons.pdf),
                   label: const Text('PDF paylaş'),
                 ),
               ],

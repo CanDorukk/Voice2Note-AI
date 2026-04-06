@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:voice_2_note_ai/app/app_icons.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/show_app_about_dialog.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
@@ -165,7 +166,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           heroTag: 'fab_record',
           tooltip: 'Yeni ses kaydı',
           elevation: 3,
-          icon: const Icon(Icons.mic_rounded),
+          icon: const Icon(AppIcons.record),
           label: const Text('Kayıt'),
           onPressed: () => AppNavigation.pushRecording(context),
         ),
@@ -208,7 +209,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
+              Icon(Icons.error_outline_rounded, size: 48, color: Theme.of(context).colorScheme.error),
               const SizedBox(height: 16),
               Text('Yüklenemedi: $err', textAlign: TextAlign.center),
             ],
@@ -264,7 +265,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                           message: 'Ses kaydı ekranına git',
                           child: FilledButton.icon(
                             onPressed: () => AppNavigation.pushRecording(context),
-                            icon: const Icon(Icons.mic_rounded),
+                            icon: const Icon(AppIcons.record),
                             label: const Text('Ses kaydı'),
                           ),
                         ),
@@ -470,7 +471,7 @@ class _NoteListTile extends ConsumerWidget {
       leading: CircleAvatar(
         backgroundColor: cs.primaryContainer,
         child: Icon(
-          Icons.note_outlined,
+          AppIcons.note,
           color: cs.onPrimaryContainer,
         ),
       ),

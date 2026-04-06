@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
+import 'package:voice_2_note_ai/app/app_icons.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/app/theme_tokens.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
@@ -34,7 +35,7 @@ class PdfPreviewScreen extends StatelessWidget {
           children: [
             NotePreviewSectionCard(
               title: 'Transkript',
-              icon: Icons.mic_none_rounded,
+              icon: AppIcons.transcriptSection,
               child: Text(
                 note.transcript.trim().isEmpty
                     ? 'Transkript henüz hazır değil.'
@@ -44,7 +45,7 @@ class PdfPreviewScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             NotePreviewSectionCard(
               title: 'Özet',
-              icon: Icons.lightbulb_outline_rounded,
+              icon: AppIcons.summarySection,
               child: Text(
                 note.summary.trim().isEmpty
                     ? 'Özet henüz hazır değil.'
@@ -78,7 +79,7 @@ class PdfPreviewScreen extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(Icons.picture_as_pdf_rounded),
+              icon: const Icon(AppIcons.pdf),
               label: const Text('PDF dosyası oluştur'),
             ),
           ],

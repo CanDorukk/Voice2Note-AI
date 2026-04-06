@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:voice_2_note_ai/app/app_icons.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/app/theme_tokens.dart';
@@ -226,17 +227,17 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             ] else ...[
               IconButton(
                 tooltip: 'Düzenle',
-                icon: const Icon(Icons.edit_outlined),
+                icon: const Icon(Icons.edit_rounded),
                 onPressed: () => setState(() => _editing = true),
               ),
               IconButton(
                 tooltip: 'PDF önizleme',
-                icon: const Icon(Icons.picture_as_pdf_outlined),
+                icon: const Icon(AppIcons.pdf),
                 onPressed: () => AppNavigation.pushPdfPreview(context, _note),
               ),
               IconButton(
                 tooltip: 'Paylaş',
-                icon: const Icon(Icons.share_outlined),
+                icon: const Icon(AppIcons.share),
                 onPressed: () => AppNavigation.pushSharePreview(context, _note),
               ),
             ],
@@ -263,7 +264,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             const SizedBox(height: AppSpacing.md),
             _SectionCard(
               title: 'Transkript',
-              icon: Icons.mic_none_rounded,
+              icon: AppIcons.transcriptSection,
               titleAction: _editing
                   ? null
                   : _copyTitleAction(
@@ -297,7 +298,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             const SizedBox(height: AppSpacing.md),
             _SectionCard(
               title: 'Özet',
-              icon: Icons.lightbulb_outline_rounded,
+              icon: AppIcons.summarySection,
               titleAction: _editing
                   ? null
                   : _copyTitleAction(

@@ -62,7 +62,7 @@ Widget _themeMenuRow(bool selected, IconData icon, String label) {
     children: [
       SizedBox(
         width: 28,
-        child: selected ? const Icon(Icons.check, size: 20) : null,
+        child: selected ? const Icon(Icons.check_rounded, size: 20) : null,
       ),
       Icon(icon, size: 20),
       const SizedBox(width: 10),

@@ -80,7 +80,7 @@ Future<void> showAppAboutDialog(BuildContext context) async {
                     IconButton(
                       tooltip: 'Kapat',
                       onPressed: () => Navigator.of(dialogContext).pop(),
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(Icons.close_rounded),
                     ),
                   ],
                 ),

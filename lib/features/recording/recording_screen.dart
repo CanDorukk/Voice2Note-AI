@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voice_2_note_ai/app/app_icons.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/app/theme_tokens.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
@@ -205,7 +206,7 @@ class _RecordButton extends StatelessWidget {
                 ),
               ),
               child: Icon(
-                isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                isRecording ? Icons.stop_rounded : AppIcons.record,
                 size: 44,
                 color: isRecording ? cs.onError : cs.onErrorContainer,
               ),
