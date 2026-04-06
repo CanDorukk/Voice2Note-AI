@@ -225,13 +225,21 @@ class _SplashScreenState extends State<SplashScreen> {
                           margin: EdgeInsets.zero,
                           elevation: 0,
                           color: cs.surfaceContainerHighest.withAlpha(
-                            (cs.surfaceContainerHighest.alpha * 0.85).round(),
+                            (cs.surfaceContainerHighest.opacity *
+                                    255.0 *
+                                    0.85)
+                                .round()
+                                .clamp(0, 255),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
                               color: cs.outlineVariant.withAlpha(
-                                (cs.outlineVariant.alpha * 0.45).round(),
+                                (cs.outlineVariant.opacity *
+                                        255.0 *
+                                        0.45)
+                                    .round()
+                                    .clamp(0, 255),
                               ),
                             ),
                           ),
