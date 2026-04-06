@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voice_2_note_ai/app/app.dart';
+import 'package:voice_2_note_ai/app/show_app_about_dialog.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
+import 'package:voice_2_note_ai/services/server_url_nudge_prefs.dart';
 import 'package:voice_2_note_ai/services/speech_to_text_service.dart';
 import 'package:voice_2_note_ai/services/summary_service.dart';
 
@@ -32,6 +37,41 @@ Future<void> runAudioToNotePipeline({
           behavior: SnackBarBehavior.floating,
         ),
       );
+      final showNudge = await ServerUrlNudgePrefs.shouldShowSetupNudge();
+      if (showNudge) {
+        final navCtx = appRootNavigatorKey.currentContext;
+        if (navCtx != null && navCtx.mounted) {
+          await showDialog<void>(
+            context: navCtx,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: const Text('Sunucu adresi gerekli'),
+                content: const Text(
+                  'Transkript için önce Hakkında bölümünden bilgisayarınızdaki API '
+                  'adresini kaydedin (aynı Wi‑Fi veya erişilebilir ağ).',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Tamam'),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      final c = appRootNavigatorKey.currentContext;
+                      if (c != null && c.mounted) {
+                        unawaited(showAppAboutDialog(c));
+                      }
+                    },
+                    child: const Text('Hakkında'),
+                  ),
+                ],
+              );
+            },
+          );
+          await ServerUrlNudgePrefs.markSetupNudgeSeen();
+        }
+      }
       return;
     }
 

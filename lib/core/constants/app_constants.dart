@@ -5,6 +5,10 @@ class AppConstants {
   /// SharedPreferences: tanıtım ekranı bir kez gösterildi mi?
   static const String introSeenKey = 'intro_seen';
 
+  /// Sunucu adresi yokken gösterilen tek seferlik yönlendirme iletişim kutusu görüldü mü?
+  static const String serverTranscribeSetupNudgeSeenKey =
+      'server_transcribe_setup_nudge_seen';
+
   /// Örn. `http://192.168.1.10:8787` — transkript sunucusu.
   static const String remoteTranscribeBaseUrlKey = 'remote_transcribe_base_url';
 

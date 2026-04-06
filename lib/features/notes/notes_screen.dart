@@ -4,17 +4,16 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
+import 'package:voice_2_note_ai/app/show_app_about_dialog.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
-import 'package:voice_2_note_ai/features/notes/turkish_search_synonyms_section.dart';
 import 'package:voice_2_note_ai/features/notes/user_search_synonyms_provider.dart';
-import 'package:voice_2_note_ai/features/speech_to_text/remote_transcribe_settings_section.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
+import 'package:voice_2_note_ai/services/android_content_uri.dart';
 import 'package:voice_2_note_ai/services/audio_to_note_pipeline.dart';
 import 'package:voice_2_note_ai/utils/audio_duration_probe.dart';
 import 'package:voice_2_note_ai/utils/turkish_text.dart';
@@ -107,7 +106,21 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       'note_${DateTime.now().millisecondsSinceEpoch}$ext',
     );
     await Directory(p.dirname(destPath)).create(recursive: true);
-    await File(workPath).copy(destPath);
+
+    if (picked.bytes != null) {
+      await File(workPath).copy(destPath);
+    } else if (workPath.startsWith('content:')) {
+      final ok = await AndroidContentUri.copyToFile(workPath, destPath);
+      if (!ok) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dosya bu cihazdan okunamadı.')),
+        );
+        return;
+      }
+    } else {
+      await File(workPath).copy(destPath);
+    }
 
     final durationSeconds = await probeAudioDurationSeconds(destPath);
 
@@ -154,42 +167,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     );
   }
 
-  Future<void> _showAbout(BuildContext context) async {
-    final info = await PackageInfo.fromPlatform();
-    if (!context.mounted) return;
-    final rootContext = context;
-    showAboutDialog(
-      context: rootContext,
-      applicationName: 'Voice2 Note AI',
-      applicationVersion: '${info.version} (${info.buildNumber})',
-      applicationLegalese: 'Özet cihazda; transkript sunucuda',
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 12),
-          child: Text(
-            'Özet bu cihazda üretilir. Transkript için kayıtlı sunucuya '
-            'bağlanılır (aynı Wi‑Fi veya erişilebilir ağ).',
-          ),
-        ),
-        const RemoteTranscribeSettingsSection(),
-        const TurkishSearchSynonymsSection(),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () {
-              Navigator.of(rootContext).pop();
-              showLicensePage(
-                context: rootContext,
-                applicationName: 'Voice2 Note AI',
-                applicationVersion: '${info.version}+${info.buildNumber}',
-              );
-            },
-            child: const Text('Lisanslar'),
-          ),
-        ),
-      ],
-    );
-  }
+  Future<void> _showAbout(BuildContext context) => showAppAboutDialog(context);
 
   PreferredSizeWidget _notesAppBar(
     BuildContext context, {

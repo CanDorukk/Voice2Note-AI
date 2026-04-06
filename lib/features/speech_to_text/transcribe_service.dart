@@ -5,7 +5,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
+import 'package:voice_2_note_ai/services/android_content_uri.dart';
 import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
 
 /// Transkript: yalnızca kayıtlı HTTP sunucusu (`RemoteTranscribeSettings`).
@@ -20,7 +22,7 @@ class TranscribeService {
     return Duration(seconds: sec.toInt());
   }
 
-  /// [audioPath] yerel dosya yolu; `content://` desteklenmez.
+  /// [audioPath] yerel dosya yolu veya Android `content://` URI (geçici dosyaya kopyalanır).
   Future<String> transcribe({
     required String audioPath,
     int? audioDurationSeconds,
@@ -44,11 +46,19 @@ class TranscribeService {
   }) async {
     final root = baseUrl.trim().replaceAll(RegExp(r'/+$'), '');
     final uri = Uri.parse('$root/transcribe');
+    var pathForUpload = audioPath;
     if (audioPath.startsWith('content:')) {
-      return 'Bu sürümde transkript için dosya yolu gerekir. '
-          'Dosyayı yeniden içe aktarın veya uygulama içi kayıt kullanın.';
+      final tempDir = await getTemporaryDirectory();
+      pathForUpload = p.join(
+        tempDir.path,
+        'transcribe_${DateTime.now().millisecondsSinceEpoch}.m4a',
+      );
+      final ok = await AndroidContentUri.copyToFile(audioPath, pathForUpload);
+      if (!ok) {
+        return 'Ses dosyası okunamadı (içerik URI).';
+      }
     }
-    final file = File(audioPath);
+    final file = File(pathForUpload);
     if (!await file.exists()) {
       return 'Ses dosyası bulunamadı.';
     }
@@ -70,8 +80,8 @@ class TranscribeService {
       request.files.add(
         await http.MultipartFile.fromPath(
           'file',
-          audioPath,
-          filename: p.basename(audioPath),
+          pathForUpload,
+          filename: p.basename(pathForUpload),
         ),
       );
       final streamed = await request.send().timeout(timeout);
