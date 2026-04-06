@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
+import 'package:voice_2_note_ai/app/theme_tokens.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/pdf_service.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:voice_2_note_ai/services/share_service.dart';
+import 'package:voice_2_note_ai/widgets/note_preview_section_card.dart';
 
 /// Transkript, özet veya PDF paylaşımı.
 class SharePreviewScreen extends StatelessWidget {
@@ -17,18 +19,22 @@ class SharePreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shareService = ShareService();
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paylaşım'),
+        title: const Text('Paylaşım önizlemesi'),
         actions: const [
           ThemeModeMenuButton(),
         ],
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
           children: [
-            _SectionCard(
+            NotePreviewSectionCard(
               title: 'Transkript',
               icon: Icons.mic_none_rounded,
               child: Text(
@@ -37,18 +43,20 @@ class SharePreviewScreen extends StatelessWidget {
                     : note.transcript,
               ),
             ),
-            const SizedBox(height: 12),
-            _SectionCard(
+            const SizedBox(height: AppSpacing.sm),
+            NotePreviewSectionCard(
               title: 'Özet',
               icon: Icons.lightbulb_outline_rounded,
               child: Text(
-                note.summary.trim().isEmpty ? 'Özet henüz hazır değil.' : note.summary,
+                note.summary.trim().isEmpty
+                    ? 'Özet henüz hazır değil.'
+                    : note.summary,
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: [
                 OutlinedButton.icon(
                   onPressed: () => shareService.shareTranscript(note.transcript),
@@ -74,7 +82,14 @@ class SharePreviewScreen extends StatelessWidget {
                     } catch (e) {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('PDF paylaşılamadı: $e')),
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: cs.error,
+                          content: Text(
+                            'PDF paylaşılamadı: $e',
+                            style: TextStyle(color: cs.onError),
+                          ),
+                        ),
                       );
                     }
                   },
@@ -89,43 +104,3 @@ class SharePreviewScreen extends StatelessWidget {
     );
   }
 }
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
-
-  final String title;
-  final IconData icon;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-

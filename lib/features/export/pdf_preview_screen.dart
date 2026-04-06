@@ -1,10 +1,10 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
+import 'package:voice_2_note_ai/app/theme_tokens.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/pdf_service.dart';
+import 'package:voice_2_note_ai/widgets/note_preview_section_card.dart';
 
 /// PDF önizleme ve dosyaya kaydetme.
 class PdfPreviewScreen extends StatelessWidget {
@@ -20,16 +20,19 @@ class PdfPreviewScreen extends StatelessWidget {
     final pdfService = PdfService();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PDF'),
+        title: const Text('PDF önizleme'),
         actions: const [
           ThemeModeMenuButton(),
         ],
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
           children: [
-            _SectionCard(
+            NotePreviewSectionCard(
               title: 'Transkript',
               icon: Icons.mic_none_rounded,
               child: Text(
@@ -38,15 +41,17 @@ class PdfPreviewScreen extends StatelessWidget {
                     : note.transcript,
               ),
             ),
-            const SizedBox(height: 12),
-            _SectionCard(
+            const SizedBox(height: AppSpacing.sm),
+            NotePreviewSectionCard(
               title: 'Özet',
               icon: Icons.lightbulb_outline_rounded,
               child: Text(
-                note.summary.trim().isEmpty ? 'Özet henüz hazır değil.' : note.summary,
+                note.summary.trim().isEmpty
+                    ? 'Özet henüz hazır değil.'
+                    : note.summary,
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
               onPressed: () async {
                 await Printing.layoutPdf(
@@ -56,7 +61,7 @@ class PdfPreviewScreen extends StatelessWidget {
               icon: const Icon(Icons.visibility_rounded),
               label: const Text('Önizle ve yazdır'),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             FilledButton.icon(
               onPressed: () async {
                 final scaffold = ScaffoldMessenger.of(context);
@@ -69,6 +74,7 @@ class PdfPreviewScreen extends StatelessWidget {
                       'PDF oluşturuldu: ${file.path.split('/').last}\n${file.path}',
                     ),
                     duration: const Duration(seconds: 4),
+                    behavior: SnackBarBehavior.floating,
                   ),
                 );
               },
@@ -81,43 +87,3 @@ class PdfPreviewScreen extends StatelessWidget {
     );
   }
 }
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
-
-  final String title;
-  final IconData icon;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
