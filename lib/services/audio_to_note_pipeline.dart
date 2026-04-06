@@ -21,7 +21,9 @@ Future<void> runAudioToNotePipeline({
 
   try {
     final useRemote = await RemoteTranscribeSettings.isRemoteEnabled();
-    final modelPath = await WhisperModelService.instance.ensureReady();
+    final String? modelPath = useRemote
+        ? null
+        : await WhisperModelService.instance.ensureReady();
     if (!useRemote && (modelPath == null || modelPath.isEmpty)) {
       messenger.showSnackBar(
         SnackBar(

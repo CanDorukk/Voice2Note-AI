@@ -11,9 +11,7 @@ import 'package:voice_2_note_ai/features/speech_to_text/whisper_platform_channel
 import 'package:path/path.dart' as p;
 import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
 
-/// Whisper offline speech-to-text servisi.
-///
-/// Android: [MethodChannel] ile native `whisper.cpp` transkripti çalışır.
+/// Whisper speech-to-text: önce kayıtlı PC URL varsa HTTP; yoksa Android NDK `whisper.cpp`.
 class WhisperService {
   static const MethodChannel _channel =
       MethodChannel(kWhisperMethodChannelName);
@@ -30,8 +28,12 @@ class WhisperService {
   }
 
   /// Model dosyasını (varsa) belleğe yükler; ilk kayıttan önce arka planda çağrılabilir.
+  /// Uzak transkript etkinse yerel model yüklenmez.
   Future<void> warmup() async {
     if (!Platform.isAndroid) {
+      return;
+    }
+    if (await RemoteTranscribeSettings.isRemoteEnabled()) {
       return;
     }
     final modelPath = await WhisperModelService.instance.ensureReady();
@@ -53,10 +55,6 @@ class WhisperService {
     required String audioPath,
     int? audioDurationSeconds,
   }) async {
-    if (kDebugMode) {
-      debugPrint('WhisperService.transcribe audioPath: $audioPath');
-    }
-
     final remoteBase = await RemoteTranscribeSettings.getBaseUrl();
     if (remoteBase != null && remoteBase.isNotEmpty) {
       return _transcribeViaRemoteHttp(
@@ -64,6 +62,10 @@ class WhisperService {
         audioPath: audioPath,
         audioDurationSeconds: audioDurationSeconds,
       );
+    }
+
+    if (kDebugMode) {
+      debugPrint('WhisperService.transcribe (yerel NDK) audioPath: $audioPath');
     }
 
     final timeout = transcribeTimeoutForAudioSeconds(audioDurationSeconds);
