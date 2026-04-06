@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/app/theme_mode_menu_button.dart';
+import 'package:voice_2_note_ai/app/theme_tokens.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 
@@ -198,6 +199,8 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         _editing ? _transcriptController.text : _note.transcript;
     final summaryCopy = _editing ? _summaryController.text : _note.summary;
 
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Not ${_note.id ?? ''}'.trim()),
@@ -220,25 +223,44 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                 icon: const Icon(Icons.check_rounded),
                 onPressed: _saveEdits,
               ),
-            ] else
+            ] else ...[
               IconButton(
                 tooltip: 'Düzenle',
                 icon: const Icon(Icons.edit_outlined),
                 onPressed: () => setState(() => _editing = true),
               ),
+              IconButton(
+                tooltip: 'PDF önizleme',
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                onPressed: () => AppNavigation.pushPdfPreview(context, _note),
+              ),
+              IconButton(
+                tooltip: 'Paylaş',
+                icon: const Icon(Icons.share_outlined),
+                onPressed: () => AppNavigation.pushSharePreview(context, _note),
+              ),
+            ],
           ],
           const ThemeModeMenuButton(),
         ],
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.lg,
+          ),
           children: [
             Text(
               'Oluşturulma: $dateStr',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: cs.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             _SectionCard(
               title: 'Transkript',
               icon: Icons.mic_none_rounded,
@@ -254,18 +276,25 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       controller: _transcriptController,
                       minLines: 4,
                       maxLines: 12,
+                      style: Theme.of(context).textTheme.bodyLarge,
                       decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
                         alignLabelWithHint: true,
+                        hintText: 'Transkript metni',
                       ),
                     )
-                  : Text(
+                  : SelectableText(
                       _note.transcript.trim().isEmpty
                           ? 'Transkript henüz hazır değil.'
                           : _note.transcript,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            height: 1.45,
+                            color: _note.transcript.trim().isEmpty
+                                ? cs.onSurfaceVariant
+                                : null,
+                          ),
                     ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             _SectionCard(
               title: 'Özet',
               icon: Icons.lightbulb_outline_rounded,
@@ -281,18 +310,25 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       controller: _summaryController,
                       minLines: 3,
                       maxLines: 10,
+                      style: Theme.of(context).textTheme.bodyLarge,
                       decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
                         alignLabelWithHint: true,
+                        hintText: 'Özet',
                       ),
                     )
-                  : Text(
+                  : SelectableText(
                       _note.summary.trim().isEmpty
                           ? 'Özet henüz hazır değil.'
                           : _note.summary,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            height: 1.45,
+                            color: _note.summary.trim().isEmpty
+                                ? cs.onSurfaceVariant
+                                : null,
+                          ),
                     ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
             _AudioPlaybackCard(
               audioPath: _note.audioPath,
               position: _position,
@@ -300,12 +336,6 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
               isPlaying: _isPlaying,
               onPlayPause: _togglePlay,
               onSeek: _seekTo,
-            ),
-            const SizedBox(height: 14),
-            _ActionsPlaceholder(
-              note: _note,
-              onPlay: _togglePlay,
-              actionsEnabled: !_editing,
             ),
           ],
         ),
@@ -335,32 +365,43 @@ class _AudioPlaybackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
-      elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(isPlaying ? Icons.pause_circle_outline_rounded : Icons.play_circle_outline_rounded),
-                const SizedBox(width: 8),
+                Icon(
+                  Icons.graphic_eq_rounded,
+                  size: 22,
+                  color: cs.primary,
+                ),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
-                  'Oynatma',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  'Ses',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: [
-                IconButton(
-                  tooltip: isPlaying ? 'Duraklat' : 'Oynat',
+                FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
                   onPressed: onPlayPause,
-                  icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                  child: Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    size: 28,
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Slider(
                     min: 0,
@@ -378,77 +419,32 @@ class _AudioPlaybackCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Semantics(
               label: 'Geçen ve toplam süre',
               value: '${_fmt(position)} / ${_fmt(duration)}',
               child: Text(
                 '${_fmt(position)} / ${_fmt(duration)}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: cs.onSurfaceVariant,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             Text(
-              'Dosya: ${audioPath.split('/').last}',
+              audioPath.contains('/')
+                  ? 'Dosya: ${audioPath.split('/').last}'
+                  : audioPath,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: cs.onSurfaceVariant,
                   ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ActionsPlaceholder extends StatelessWidget {
-  const _ActionsPlaceholder({
-    required this.note,
-    required this.onPlay,
-    this.actionsEnabled = true,
-  });
-
-  final NoteModel note;
-  final VoidCallback onPlay;
-  final bool actionsEnabled;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        Tooltip(
-          message: 'Ses oynat veya duraklat',
-          child: OutlinedButton.icon(
-            onPressed: actionsEnabled ? onPlay : null,
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Oynat'),
-          ),
-        ),
-        Tooltip(
-          message: 'PDF önizleme ekranına git',
-          child: OutlinedButton.icon(
-            onPressed: actionsEnabled
-                ? () => AppNavigation.pushPdfPreview(context, note)
-                : null,
-            icon: const Icon(Icons.picture_as_pdf_rounded),
-            label: const Text('PDF'),
-          ),
-        ),
-        Tooltip(
-          message: 'Paylaşım önizleme ekranına git',
-          child: OutlinedButton.icon(
-            onPressed: actionsEnabled
-                ? () => AppNavigation.pushSharePreview(context, note)
-                : null,
-            icon: const Icon(Icons.share_rounded),
-            label: const Text('Paylaş'),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -468,27 +464,29 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
-      elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, size: 20),
-                const SizedBox(width: 8),
+                Icon(icon, size: 22, color: cs.primary),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ),
                 if (titleAction != null) titleAction!,
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             child,
           ],
         ),
