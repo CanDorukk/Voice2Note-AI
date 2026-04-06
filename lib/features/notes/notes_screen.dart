@@ -146,6 +146,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   }
 
   Widget _recordFabStack(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -153,16 +154,20 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         FloatingActionButton.small(
           heroTag: 'fab_import_audio',
           tooltip: 'Ses dosyası yükle (m4a, wav, …)',
+          elevation: 2,
+          backgroundColor: cs.secondaryContainer,
+          foregroundColor: cs.onSecondaryContainer,
           onPressed: () => _importAudioFromFile(context),
           child: const Icon(Icons.upload_file_rounded),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         FloatingActionButton.extended(
           heroTag: 'fab_record',
           tooltip: 'Yeni ses kaydı',
-          onPressed: () => AppNavigation.pushRecording(context),
+          elevation: 3,
           icon: const Icon(Icons.mic_rounded),
           label: const Text('Kayıt'),
+          onPressed: () => AppNavigation.pushRecording(context),
         ),
       ],
     );
