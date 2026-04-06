@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voice_2_note_ai/features/notes/notes_provider.dart';
 import 'package:voice_2_note_ai/features/notes/pending_processing_provider.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_service.dart';
+import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
 import 'package:voice_2_note_ai/models/note_model.dart';
 import 'package:voice_2_note_ai/services/speech_to_text_service.dart';
 import 'package:voice_2_note_ai/services/summary_service.dart';
@@ -19,14 +20,16 @@ Future<void> runAudioToNotePipeline({
   final summarizer = SummaryService();
 
   try {
+    final useRemote = await RemoteTranscribeSettings.isRemoteEnabled();
     final modelPath = await WhisperModelService.instance.ensureReady();
-    if (modelPath == null || modelPath.isEmpty) {
+    if (!useRemote && (modelPath == null || modelPath.isEmpty)) {
       messenger.showSnackBar(
         SnackBar(
           content: const Text(
             'Ses tanıma paketi bulunamadı. İlk açılışta indirmeniz gerekir. '
             'Gerekirse uygulama verilerini temizleyip uygulamayı yeniden açarak '
-            'tanıtım ekranına dönebilirsiniz (Ayarlar > Uygulamalar > bu uygulama > Depolama).',
+            'tanıtım ekranına dönebilirsiniz (Ayarlar > Uygulamalar > bu uygulama > Depolama). '
+            'Alternatif: Hakkında bölümünden PC sunucu adresi girerek transkripti bilgisayarda çalıştırabilirsiniz.',
           ),
           backgroundColor: Colors.red.shade800,
           duration: const Duration(seconds: 8),

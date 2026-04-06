@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_service.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_platform_channel.dart';
+import 'package:path/path.dart' as p;
+import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
 
 /// Whisper offline speech-to-text servisi.
 ///
@@ -51,6 +55,15 @@ class WhisperService {
   }) async {
     if (kDebugMode) {
       debugPrint('WhisperService.transcribe audioPath: $audioPath');
+    }
+
+    final remoteBase = await RemoteTranscribeSettings.getBaseUrl();
+    if (remoteBase != null && remoteBase.isNotEmpty) {
+      return _transcribeViaRemoteHttp(
+        baseUrl: remoteBase,
+        audioPath: audioPath,
+        audioDurationSeconds: audioDurationSeconds,
+      );
     }
 
     final timeout = transcribeTimeoutForAudioSeconds(audioDurationSeconds);
@@ -117,6 +130,73 @@ class WhisperService {
     }
 
     return _fallbackTranscript();
+  }
+
+  /// PC / VPS üzerindeki FastAPI sunucusu (`docs/pc_whisper_sunucu.md`).
+  Future<String> _transcribeViaRemoteHttp({
+    required String baseUrl,
+    required String audioPath,
+    int? audioDurationSeconds,
+  }) async {
+    final root = baseUrl.trim().replaceAll(RegExp(r'/+$'), '');
+    final uri = Uri.parse('$root/transcribe');
+    if (audioPath.startsWith('content:')) {
+      return 'PC sunucusu ile transkript şimdilik dosya yolu gerektiriyor. '
+          'Ses dosyasını tekrar içe aktarın veya uygulama içi kayıt kullanın.';
+    }
+    final file = File(audioPath);
+    if (!await file.exists()) {
+      return 'Ses dosyası bulunamadı.';
+    }
+    final timeoutMin = (audioDurationSeconds != null && audioDurationSeconds > 0)
+        ? ((audioDurationSeconds * 3) / 60).ceil().clamp(5, 120)
+        : 45;
+    final timeout = Duration(minutes: timeoutMin);
+    if (kDebugMode) {
+      debugPrint(
+        'WhisperService: uzak transkript POST $uri (zaman aşımı ${timeout.inMinutes} dk)',
+      );
+    }
+    try {
+      final request = http.MultipartRequest('POST', uri);
+      final apiKey = await RemoteTranscribeSettings.getApiKey();
+      if (apiKey != null && apiKey.isNotEmpty) {
+        request.headers['X-Api-Key'] = apiKey;
+      }
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          audioPath,
+          filename: p.basename(audioPath),
+        ),
+      );
+      final streamed = await request.send().timeout(timeout);
+      final body = await streamed.stream.bytesToString();
+      if (streamed.statusCode != 200) {
+        return 'Sunucu yanıtı (${streamed.statusCode}): ${body.length > 500 ? "${body.substring(0, 500)}…" : body}';
+      }
+      final decoded = jsonDecode(body);
+      if (decoded is! Map<String, dynamic>) {
+        return 'Sunucu yanıtı beklenen JSON değil.';
+      }
+      final text = decoded['text'];
+      if (text is! String) {
+        return 'Sunucu yanıtında metin yok.';
+      }
+      final t = text.trim();
+      if (t.isEmpty) {
+        return 'Sunucu boş metin döndü.';
+      }
+      return t;
+    } on TimeoutException {
+      return 'Uzak transkript zaman aşımı (${timeout.inMinutes} dk). '
+          'PC sunucusunun açık ve aynı ağda olduğundan emin olun.';
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('WhisperService._transcribeViaRemoteHttp: $e\n$st');
+      }
+      return 'Uzak transkript başarısız: $e';
+    }
   }
 
   String _fallbackTranscript() {

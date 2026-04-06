@@ -89,3 +89,21 @@ assets/models/*.bin
 
 # whisper.cpp kaynak ağacı (çok büyük; repo dışı kopya/submodule kullanıyorsan aç)
 # android/app/src/main/cpp/third_party/whisper.cpp/
+
+# Python (PC Whisper HTTP sunucusu — venv ve önbellek repoya girmez)
+server/**/.venv/
+server/**/.venv/**
+**/__pycache__/
+**/*.py[cod]
+**/*.pyo
+**/.Python
+**/pip-log.txt
+**/*.egg-info/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+server/**/.cache/
+
+# Yerel ortam / API (PC sunucusu; asla commit etme)
+server/**/.env
+server/**/.env.*

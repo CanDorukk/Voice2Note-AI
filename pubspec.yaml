@@ -23,6 +23,7 @@ dependencies:
   printing: ^5.14.3
   package_info_plus: ^8.1.2
   file_picker: ^8.1.4
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
