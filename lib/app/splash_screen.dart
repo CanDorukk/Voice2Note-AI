@@ -225,6 +225,8 @@ class _SplashScreenState extends State<SplashScreen> {
                           margin: EdgeInsets.zero,
                           elevation: 0,
                           color: cs.surfaceContainerHighest.withAlpha(
+                            // opacity → .a geçişi yerel eski Flutter’da .a yok; CI ile uyum için.
+                            // ignore: deprecated_member_use
                             (cs.surfaceContainerHighest.opacity *
                                     255.0 *
                                     0.85)
@@ -235,6 +237,7 @@ class _SplashScreenState extends State<SplashScreen> {
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
                               color: cs.outlineVariant.withAlpha(
+                                // ignore: deprecated_member_use
                                 (cs.outlineVariant.opacity *
                                         255.0 *
                                         0.45)

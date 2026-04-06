@@ -74,7 +74,44 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       return;
     }
 
-    final prepared = await prepareLocalAudioForWhisper(workPath);
+    if (!context.mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Ses dosyası Whisper için dönüştürülüyor (m4a vb. → 16 kHz WAV). '
+                  'Uzun kayıtlarda birkaç dakika sürebilir.',
+                  style: Theme.of(dialogContext).textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    WhisperAudioPrepared? prepared;
+    try {
+      prepared = await prepareLocalAudioForWhisper(workPath);
+    } finally {
+      if (context.mounted) {
+        final nav = Navigator.of(context, rootNavigator: true);
+        if (nav.canPop()) nav.pop();
+      }
+    }
+
     if (prepared == null) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
