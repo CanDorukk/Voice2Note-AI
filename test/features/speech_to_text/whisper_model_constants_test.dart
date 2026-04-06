@@ -6,4 +6,9 @@ void main() {
     expect(kWhisperGgmlBaseQ5MinBytes, greaterThan(0));
     expect(kWhisperGgmlBaseQ5MinBytes, 50 * 1024 * 1024);
   });
+
+  test('kWhisperGgmlSmallQ5MinBytes base’den büyük', () {
+    expect(kWhisperGgmlSmallQ5MinBytes, greaterThan(kWhisperGgmlBaseQ5MinBytes));
+    expect(kWhisperGgmlSmallQ5MinBytes, 160 * 1024 * 1024);
+  });
 }

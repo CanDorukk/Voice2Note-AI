@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_ggml_model.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_service.dart';
 
 /// Hakkında vb. içinde: Android’de ses tanıma paketinin durumu ve ağdan indirme.
@@ -15,6 +16,7 @@ class WhisperModelDownloadSection extends StatefulWidget {
 
 class _WhisperModelDownloadSectionState
     extends State<WhisperModelDownloadSection> {
+  WhisperGgmlModel _kind = WhisperGgmlModel.base;
   bool _checking = true;
   bool _modelReady = false;
   bool _downloading = false;
@@ -29,10 +31,29 @@ class _WhisperModelDownloadSectionState
       _checking = false;
       return;
     }
-    _checkModel();
+    _bootstrap();
   }
 
-  Future<void> _checkModel() async {
+  Future<void> _bootstrap() async {
+    final kind = await WhisperModelService.instance.getSelectedModel();
+    if (!mounted) return;
+    setState(() => _kind = kind);
+    await _recheck();
+  }
+
+  Future<void> _onModelKindChanged(WhisperGgmlModel next) async {
+    if (_downloading) return;
+    await WhisperModelService.instance.setSelectedModel(next);
+    if (!mounted) return;
+    setState(() {
+      _kind = next;
+      _downloadError = null;
+    });
+    await _recheck();
+  }
+
+  Future<void> _recheck() async {
+    setState(() => _checking = true);
     final path = await WhisperModelService.instance.ensureReady();
     if (!mounted) return;
     setState(() {
@@ -48,7 +69,7 @@ class _WhisperModelDownloadSectionState
       _received = 0;
       _total = null;
     });
-    final ok = await WhisperModelService.instance.downloadGgmlBaseQ5FromNetwork(
+    final ok = await WhisperModelService.instance.downloadSelectedModelFromNetwork(
       onProgress: (received, total) {
         if (!mounted) return;
         setState(() {
@@ -67,6 +88,7 @@ class _WhisperModelDownloadSectionState
       return;
     }
     final path = await WhisperModelService.instance.ensureReady();
+    if (!mounted) return;
     setState(() {
       _downloading = false;
       _modelReady = path != null && path.isNotEmpty;
@@ -143,11 +165,18 @@ class _WhisperModelDownloadSectionState
               ),
             ],
           ),
+          const SizedBox(height: 8),
+          WhisperGgmlModelSegmentedButton(
+            selected: _kind,
+            enabled: !_downloading,
+            onChanged: _onModelKindChanged,
+          ),
           const SizedBox(height: 6),
           Text(
             _modelReady
                 ? 'Kayıt ve transkript için paket hazır. Bozuksa veya silindiyse yeniden indirebilirsiniz.'
-                : 'Konuşmayı yazıya dökmek için paketi indirmeniz gerekir (yaklaşık 60 MB; Wi‑Fi önerilir).',
+                : 'Konuşmayı yazıya dökmek için paketi indirmeniz gerekir '
+                    '(yaklaşık ${_kind.approxDownloadMegabytes} MB; Wi‑Fi önerilir).',
             style: textTheme.bodySmall?.copyWith(
               color: cs.onSurfaceVariant,
               height: 1.35,

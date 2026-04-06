@@ -9,7 +9,7 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 - **Kayıt / dosya:** Mikrofon kaydı veya dosya seçicide **yalnızca ses** (ör. m4a, wav); Android’de gerekirse `AudioToWav16kMono` ile 16 kHz mono PCM WAV’a dönüştürülür. Arka planda aynı işlem (`audio_to_note_pipeline.dart`) transkript + özet + veritabanı. Bekleyen satırlar `pending_processing_provider.dart`.
 - **Gezinme:** Ana `MaterialPageRoute` geçişleri `lib/app/app_navigation.dart` içinde toplanır.
 - **PDF:** Önizleme/yazdırma (`printing`) ve dosyaya kaydetme; paylaşım ekranında transkript/özet/PDF paylaşımı.
-- **Hakkında:** Uygulama sürümü ve `showLicensePage` ile lisanslar; Android’de ses tanıma paketinin durumu ve (gerekirse) indirme / yeniden indirme.
+- **Hakkında:** Uygulama sürümü ve `showLicensePage` ile lisanslar; Android’de ses tanıma paketi için **Base / Small** seçimi, durum ve indirme / yeniden indirme.
 
 ## Gereksinimler
 
@@ -18,7 +18,7 @@ Flutter tabanlı ses kaydı → çevrimdışı Whisper transkript → özet (Tex
 
 ## Ses tanıma paketi (Android)
 
-**Uygulama içi:** İlk açılışta tanıtım ekranında paket indirilir (yaklaşık 60 MB; Wi‑Fi önerilir); indirme bitmeden **Başla** açılmaz. Paket eksik veya bozuksa **Hakkında** iletişim kutusundan da indirilebilir veya yeniden indirilebilir.
+**Uygulama içi:** Tanıtım ve **Hakkında** ekranında **Base** (~60 MB) veya **Small** (~190 MB) `ggml-*-q5_1` paketinden biri seçilir; indirme bitmeden **Başla** açılmaz. Small yalnızca ağdan indirilir (APK’ya gömülü değildir). Paket eksik veya bozuksa **Hakkında** üzerinden de indirilebilir veya yeniden indirilebilir.
 
 **Kaynak kodu / geliştirici:** Paket dosyası repoda yoktur. Yerel derleme veya CI için `assets/models/ggml-base-q5_1.bin` yolunda gerçek dosya gerekir ([ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) üzerinden `ggml-base-q5_1.bin`). Boş veya 0 baytlık dosya ile çalışmaz; analiz uyarısı `analysis_options.yaml` ile kapatılır, CI’da boş dosya oluşturulur.
 
@@ -40,11 +40,10 @@ Push ve pull request’lerde GitHub Actions aynı komutları çalıştırır (`.
 
 ## Yapılacaklar (ileride)
 
-1. **Model:** İsteğe bağlı `small` ggml quantize veya uygulama içi model seçimi.
-2. **İçe aktarma:** iOS veya ek biçimler için dönüştürme / net hata mesajları (Android’de m4a vb. MediaCodec ile).
-3. **Türkçe (ileri):** Arama eş anlamlılığı veya kullanıcı sözlüğü; not araması ve TextRank için `normalizeForTurkishSearch` ile birleşik/ayrık yazım ve Latin uzantı harfleri zaten uygulanıyor.
+1. **İçe aktarma:** iOS veya ek biçimler için dönüştürme / net hata mesajları (Android’de m4a vb. MediaCodec ile).
+2. **Türkçe (ileri):** Arama eş anlamlılığı veya kullanıcı sözlüğü; not araması ve TextRank için `normalizeForTurkishSearch` ile birleşik/ayrık yazım ve Latin uzantı harfleri zaten uygulanıyor.
 
-**Tamamlanan (referans):** Android’de **Hakkında** iletişim kutusunda ses tanıma paketi durumu, ilk indirme ve “Paketi yeniden indir” (paket eksik veya bozuksa).
+**Tamamlanan (referans):** Android’de **Base/Small** ggml seçimi (SharedPreferences), tanıtım + Hakkında’da indirme; paket yeniden indirme.
 
 ## Platform notu
 

@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/core/constants/app_constants.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_ggml_model.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_service.dart';
 
 /// Tanıtım ekranı. Android’de Whisper modeli yoksa bu ekrandan indirilir.
@@ -18,6 +19,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   String? _versionLine;
+  WhisperGgmlModel _kind = WhisperGgmlModel.base;
   bool _modelChecking = true;
   bool _modelReady = false;
   bool _downloading = false;
@@ -29,7 +31,44 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _loadVersion();
-    _checkModel();
+    _initModelState();
+  }
+
+  Future<void> _initModelState() async {
+    if (kIsWeb || !Platform.isAndroid) {
+      if (!mounted) return;
+      setState(() {
+        _modelReady = true;
+        _modelChecking = false;
+      });
+      return;
+    }
+    final kind = await WhisperModelService.instance.getSelectedModel();
+    if (!mounted) return;
+    setState(() => _kind = kind);
+    await _refreshModelReady();
+  }
+
+  Future<void> _onModelKindChanged(WhisperGgmlModel next) async {
+    if (_downloading) return;
+    await WhisperModelService.instance.setSelectedModel(next);
+    if (!mounted) return;
+    setState(() {
+      _kind = next;
+      _downloadError = null;
+    });
+    await _refreshModelReady();
+  }
+
+  Future<void> _refreshModelReady() async {
+    if (kIsWeb || !Platform.isAndroid) return;
+    setState(() => _modelChecking = true);
+    final path = await WhisperModelService.instance.ensureReady();
+    if (!mounted) return;
+    setState(() {
+      _modelReady = path != null && path.isNotEmpty;
+      _modelChecking = false;
+    });
   }
 
   Future<void> _loadVersion() async {
@@ -40,22 +79,6 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-  Future<void> _checkModel() async {
-    if (kIsWeb || !Platform.isAndroid) {
-      setState(() {
-        _modelReady = true;
-        _modelChecking = false;
-      });
-      return;
-    }
-    final path = await WhisperModelService.instance.ensureReady();
-    if (!mounted) return;
-    setState(() {
-      _modelReady = path != null && path.isNotEmpty;
-      _modelChecking = false;
-    });
-  }
-
   Future<void> _downloadModel() async {
     setState(() {
       _downloadError = null;
@@ -63,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
       _received = 0;
       _total = null;
     });
-    final ok = await WhisperModelService.instance.downloadGgmlBaseQ5FromNetwork(
+    final ok = await WhisperModelService.instance.downloadSelectedModelFromNetwork(
       onProgress: (received, total) {
         if (!mounted) return;
         setState(() {
@@ -82,6 +105,7 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
     final path = await WhisperModelService.instance.ensureReady();
+    if (!mounted) return;
     setState(() {
       _downloading = false;
       _modelReady = path != null && path.isNotEmpty;
@@ -239,11 +263,18 @@ class _SplashScreenState extends State<SplashScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 10),
+                                WhisperGgmlModelSegmentedButton(
+                                  selected: _kind,
+                                  enabled: !_downloading,
+                                  onChanged: _onModelKindChanged,
+                                ),
+                                const SizedBox(height: 10),
                                 Text(
                                   _modelReady
                                       ? 'Kayıt alabilir veya galeriden ses dosyası seçebilirsiniz.'
                                       : 'Söylediklerinizi yazıya dökmek için bu paket bir kez indirilir '
-                                          '(yaklaşık 60 MB). Mümkünse Wi‑Fi kullanın.',
+                                          '(yaklaşık ${_kind.approxDownloadMegabytes} MB). '
+                                          'Mümkünse Wi‑Fi kullanın.',
                                   style: textTheme.bodySmall?.copyWith(
                                     color: cs.onSurfaceVariant,
                                     height: 1.4,

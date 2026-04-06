@@ -4,24 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_constants.dart';
+import 'package:voice_2_note_ai/core/constants/app_constants.dart';
+import 'package:voice_2_note_ai/features/speech_to_text/whisper_ggml_model.dart';
 
-/// `ggml-base-q5_1.bin` (quantize) dosyasını asset'ten uygulama dizinine kopyalar.
-///
-/// Diskteki dosya çok küçükse (bozuk/kısmi kopya) silinip asset'ten yeniden yazılır.
-///
-/// Yerel geliştirme: `assets/models/ggml-base-q5_1.bin` dosyasını
-/// Hugging Face `ggerganov/whisper.cpp` üzerinden indirip koyun
-/// (Git'e eklenmez; `.gitignore` içindedir).
+/// Seçilen ggml quantize dosyasını asset veya ağdan uygulama dizinine getirir.
 class WhisperModelService {
   WhisperModelService._();
 
   static final WhisperModelService instance = WhisperModelService._();
 
-  static const String _assetPath = 'assets/models/ggml-base-q5_1.bin';
   static const String _diskRelativeDir = 'whisper';
-  static const String _diskFileName = 'ggml-base-q5_1.bin';
 
   /// Eski sürüm dosya adları (tek seferlik temizlik).
   static const List<String> _legacyDiskFileNames = [
@@ -29,18 +23,32 @@ class WhisperModelService {
     'ggml-tiny-q5_1.bin',
   ];
 
-  Future<File> _targetModelFile() async {
-    final base = await getApplicationDocumentsDirectory();
-    return File(p.join(base.path, _diskRelativeDir, _diskFileName));
+  Future<WhisperGgmlModel> getSelectedModel() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(AppConstants.whisperGgmlModelKey);
+    if (raw == WhisperGgmlModel.small.name) {
+      return WhisperGgmlModel.small;
+    }
+    return WhisperGgmlModel.base;
   }
 
-  /// Hugging Face üzerinden doğrudan indirir (HTTPS). İndirilen dosya [ensureReady] ile kullanılır.
-  Future<bool> downloadGgmlBaseQ5FromNetwork({
+  Future<void> setSelectedModel(WhisperGgmlModel model) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.whisperGgmlModelKey, model.name);
+  }
+
+  Future<File> _targetModelFile(WhisperGgmlModel model) async {
+    final base = await getApplicationDocumentsDirectory();
+    return File(p.join(base.path, _diskRelativeDir, model.storageFileName));
+  }
+
+  /// Seçili modele göre Hugging Face’den indirir.
+  Future<bool> downloadSelectedModelFromNetwork({
     void Function(int received, int? total)? onProgress,
   }) async {
-    final uri = Uri.parse(
-      'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base-q5_1.bin',
-    );
+    final model = await getSelectedModel();
+    final uri = Uri.parse(model.huggingFaceUrl);
+    final minBytes = model.minValidBytes;
     final client = HttpClient();
     try {
       final request = await client.getUrl(uri);
@@ -57,7 +65,7 @@ class WhisperModelService {
         return false;
       }
       final total = response.contentLength >= 0 ? response.contentLength : null;
-      final target = await _targetModelFile();
+      final target = await _targetModelFile(model);
       await target.parent.create(recursive: true);
       final partPath = '${target.path}.part';
       final part = File(partPath);
@@ -77,7 +85,7 @@ class WhisperModelService {
       } finally {
         await sink.close();
       }
-      if (received < kWhisperGgmlBaseQ5MinBytes) {
+      if (received < minBytes) {
         try {
           await part.delete();
         } catch (_) {}
@@ -97,7 +105,9 @@ class WhisperModelService {
       return true;
     } catch (e, st) {
       if (kDebugMode) {
-        debugPrint('WhisperModelService.downloadGgmlBaseQ5FromNetwork: $e\n$st');
+        debugPrint(
+          'WhisperModelService.downloadSelectedModelFromNetwork: $e\n$st',
+        );
       }
       return false;
     } finally {
@@ -119,17 +129,19 @@ class WhisperModelService {
     }
   }
 
-  /// Model dosyası hazırsa tam yol, aksi halde `null` (asset yok / kopya hatası).
+  /// Seçilen model dosyası hazırsa tam yol, aksi halde `null`.
   Future<String?> ensureReady() async {
     try {
+      final model = await getSelectedModel();
       final base = await getApplicationDocumentsDirectory();
       await _deleteLegacyModelsIfPresent(base.path);
-      final target = await _targetModelFile();
+      final target = await _targetModelFile(model);
+      final minBytes = model.minValidBytes;
 
       Future<void> removeIfInvalid() async {
         if (!await target.exists()) return;
         final len = await target.length();
-        if (len >= kWhisperGgmlBaseQ5MinBytes) return;
+        if (len >= minBytes) return;
         if (kDebugMode) {
           debugPrint(
             'WhisperModelService: model geçersiz boyut ($len byte), yeniden kopyalanacak',
@@ -144,7 +156,7 @@ class WhisperModelService {
 
       if (await target.exists()) {
         final len = await target.length();
-        if (len >= kWhisperGgmlBaseQ5MinBytes) {
+        if (len >= minBytes) {
           if (kDebugMode) {
             debugPrint(
               'WhisperModelService: mevcut model ${target.path} ($len byte)',
@@ -154,14 +166,19 @@ class WhisperModelService {
         }
       }
 
+      final assetPath = model.bundledAssetPath;
+      if (assetPath == null) {
+        return null;
+      }
+
       await target.parent.create(recursive: true);
-      final data = await rootBundle.load(_assetPath);
+      final data = await rootBundle.load(assetPath);
       final bytes = data.buffer.asUint8List();
-      if (bytes.length < kWhisperGgmlBaseQ5MinBytes) {
+      if (bytes.length < minBytes) {
         if (kDebugMode) {
           debugPrint(
             'WhisperModelService: asset model çok küçük (${bytes.length} byte). '
-            'Gerçek ggml-base-q5_1.bin dosyasını Hugging Face’den indirip '
+            'Gerçek ${model.storageFileName} dosyasını Hugging Face’den indirip '
             'assets/models/ altına koyun; boş/placeholder dosya ile Whisper çalışmaz.',
           );
         }
@@ -169,7 +186,7 @@ class WhisperModelService {
       }
       await target.writeAsBytes(bytes, flush: true);
       final written = await target.length();
-      if (written < kWhisperGgmlBaseQ5MinBytes) {
+      if (written < minBytes) {
         try {
           await target.delete();
         } catch (_) {}
