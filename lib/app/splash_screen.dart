@@ -8,8 +8,9 @@ import 'package:voice_2_note_ai/app/app_navigation.dart';
 import 'package:voice_2_note_ai/core/constants/app_constants.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_ggml_model.dart';
 import 'package:voice_2_note_ai/features/speech_to_text/whisper_model_service.dart';
+import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
 
-/// Tanıtım ekranı. Android’de Whisper modeli yoksa bu ekrandan indirilir.
+/// Tanıtım ekranı. Transkript için öncelik internet + kayıtlı PC sunucusu; çevrimdışı paket isteğe bağlı.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -22,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
   WhisperGgmlModel _kind = WhisperGgmlModel.small;
   bool _modelChecking = true;
   bool _modelReady = false;
+  bool _remoteUrlConfigured = false;
   bool _downloading = false;
   int _received = 0;
   int? _total;
@@ -44,8 +46,12 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
     final kind = await WhisperModelService.instance.getSelectedModel();
+    final remoteOn = await RemoteTranscribeSettings.isRemoteEnabled();
     if (!mounted) return;
-    setState(() => _kind = kind);
+    setState(() {
+      _kind = kind;
+      _remoteUrlConfigured = remoteOn;
+    });
     await _refreshModelReady();
   }
 
@@ -63,9 +69,24 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _refreshModelReady() async {
     if (kIsWeb || !Platform.isAndroid) return;
     setState(() => _modelChecking = true);
+    final remoteOn = await RemoteTranscribeSettings.isRemoteEnabled();
+    if (!mounted) return;
+    if (remoteOn) {
+      setState(() {
+        _remoteUrlConfigured = true;
+        _modelChecking = false;
+      });
+      final pathRemote = await WhisperModelService.instance.ensureReady();
+      if (!mounted) return;
+      setState(() {
+        _modelReady = pathRemote != null && pathRemote.isNotEmpty;
+      });
+      return;
+    }
     final path = await WhisperModelService.instance.ensureReady();
     if (!mounted) return;
     setState(() {
+      _remoteUrlConfigured = false;
       _modelReady = path != null && path.isNotEmpty;
       _modelChecking = false;
     });
@@ -122,14 +143,56 @@ class _SplashScreenState extends State<SplashScreen> {
     AppNavigation.pushNotesReplace(context);
   }
 
+  /// Çevrimdışı paket indirme alanı (yerel ggml yokken; PC sunucusu olsa da isteğe bağlı).
   bool get _needsModelUi =>
       !kIsWeb && Platform.isAndroid && !_modelChecking && !_modelReady;
 
-  /// Android’de konuşmayı yazıya çevirmek için model şart; diğer platformlarda tanıtımı geçmeye izin verilir.
   bool get _canPressStart {
     if (_downloading || _modelChecking) return false;
-    if (kIsWeb || !Platform.isAndroid) return true;
-    return _modelReady;
+    return true;
+  }
+
+  IconData get _splashModelStatusIcon {
+    if (_modelReady) {
+      return Icons.verified_rounded;
+    }
+    if (_remoteUrlConfigured) {
+      return Icons.cloud_done_rounded;
+    }
+    return Icons.model_training_rounded;
+  }
+
+  Color _splashModelStatusColor(ColorScheme cs) {
+    if (_modelReady || _remoteUrlConfigured) {
+      return cs.primary;
+    }
+    return cs.secondary;
+  }
+
+  String get _splashModelStatusTitle {
+    if (_modelReady && _remoteUrlConfigured) {
+      return 'PC sunucusu + çevrimdışı paket hazır';
+    }
+    if (_modelReady) {
+      return 'Çevrimdışı paket hazır';
+    }
+    if (_remoteUrlConfigured) {
+      return 'PC sunucusu kayıtlı';
+    }
+    return 'Çevrimdışı paket (isteğe bağlı)';
+  }
+
+  String get _splashModelHelpText {
+    if (_modelReady) {
+      return 'Kayıt veya dosya içe aktarma ile çevrimdışı transkript kullanılabilir.';
+    }
+    if (_remoteUrlConfigured) {
+      return 'Transkript için Hakkında’da kayıtlı adres kullanılır (internet gerekir). '
+          'İsterseniz aşağıdan çevrimdışı paketi de indirebilirsiniz '
+          '(yaklaşık ${_kind.approxDownloadMegabytes} MB).';
+    }
+    return 'İnternet + PC sunucusu (Hakkında’dan) veya bu paketle transkript. '
+        'Paket yaklaşık ${_kind.approxDownloadMegabytes} MB; mümkünse Wi‑Fi kullanın.';
   }
 
   double? get _progressFraction {
@@ -178,7 +241,8 @@ class _SplashScreenState extends State<SplashScreen> {
                       const SizedBox(height: 12),
                       Text(
                         'Kayıtlarınızı metne dökün, kısa özetler alın.\n'
-                        'Transkript ve özet cihazınızda çalışır.',
+                        'Özet cihazda; transkript için internet ve isteğe bağlı PC sunucusu veya '
+                        'çevrimdışı paket kullanılır.',
                         style: textTheme.bodyLarge?.copyWith(
                           color: cs.onSurfaceVariant,
                           height: 1.35,
@@ -254,18 +318,14 @@ class _SplashScreenState extends State<SplashScreen> {
                                 Row(
                                   children: [
                                     Icon(
-                                      _modelReady
-                                          ? Icons.verified_rounded
-                                          : Icons.model_training_rounded,
-                                      color: _modelReady ? cs.primary : cs.secondary,
+                                      _splashModelStatusIcon,
+                                      color: _splashModelStatusColor(cs),
                                       size: 22,
                                     ),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        _modelReady
-                                            ? 'Ses tanıma hazır'
-                                            : 'Önce ses paketini indirin',
+                                        _splashModelStatusTitle,
                                         style: textTheme.titleSmall?.copyWith(
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -281,11 +341,7 @@ class _SplashScreenState extends State<SplashScreen> {
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  _modelReady
-                                      ? 'Kayıt alabilir veya galeriden ses dosyası seçebilirsiniz.'
-                                      : 'Söylediklerinizi yazıya dökmek için bu paket bir kez indirilir '
-                                          '(yaklaşık ${_kind.approxDownloadMegabytes} MB). '
-                                          'Mümkünse Wi‑Fi kullanın.',
+                                  _splashModelHelpText,
                                   style: textTheme.bodySmall?.copyWith(
                                     color: cs.onSurfaceVariant,
                                     height: 1.4,
@@ -355,15 +411,10 @@ class _SplashScreenState extends State<SplashScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                       ),
-                      if (!_canPressStart &&
-                          Platform.isAndroid &&
-                          !kIsWeb &&
-                          !_modelChecking) ...[
+                      if (_downloading && Platform.isAndroid && !kIsWeb) ...[
                         const SizedBox(height: 10),
                         Text(
-                          _downloading
-                              ? 'İndirme bitince Başla düğmesi açılır.'
-                              : 'Başlamak için önce ses paketini indirin.',
+                          'İndirme sürerken Başla geçici olarak kapalıdır.',
                           style: textTheme.labelSmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
