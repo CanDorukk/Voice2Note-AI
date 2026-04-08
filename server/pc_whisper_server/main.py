@@ -10,9 +10,12 @@ faster-whisper çalışır. **ffmpeg** sistem PATH’inde olmalıdır.
   uvicorn main:app --host 0.0.0.0 --port 8787
 
 Ortam değişkenleri:
-  V2N_API_KEY  — doluysa istekte X-Api-Key başlığı aynı olmalı
-  V2N_MODEL    — tiny | base | small | medium (varsayılan: small)
-  V2N_DEVICE  — cuda | cpu (boşsa varsayılan cpu; tam CUDA/cuBLAS yoksa güvenli)
+  V2N_API_KEY     — doluysa istekte X-Api-Key başlığı aynı olmalı
+  V2N_MODEL       — tiny | base | small | medium | large-v2 | large-v3 … (varsayılan: small)
+  V2N_DEVICE      — cuda | cpu (boşsa varsayılan cpu; tam CUDA/cuBLAS yoksa güvenli)
+  V2N_BEAM_SIZE   — arama genişliği (varsayılan: 5; daha yüksek = daha iyi, daha yavaş)
+  V2N_VAD_FILTER  — 1/true veya 0/false (varsayılan: true; sessiz kısımları atlar)
+  V2N_LANGUAGE    — ISO kod (varsayılan: tr) veya auto (otomatik dil)
 """
 
 from __future__ import annotations
@@ -39,6 +42,39 @@ MODEL_SIZE = os.environ.get("V2N_MODEL", "small").strip() or "small"
 _model: WhisperModel | None = None
 
 
+def _env_int(name: str, default: int, *, min_v: int = 1, max_v: int = 20) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return max(min_v, min(max_v, int(raw)))
+    except ValueError:
+        return default
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if not raw:
+        return default
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("0", "false", "no", "off"):
+        return False
+    return default
+
+
+def _transcribe_language() -> Optional[str]:
+    """Varsayılan tr; 'auto' veya boş → otomatik dil (faster-whisper)."""
+    raw = os.environ.get("V2N_LANGUAGE", "tr").strip().lower()
+    if not raw or raw == "auto":
+        return None
+    return raw
+
+
+BEAM_SIZE = _env_int("V2N_BEAM_SIZE", 5, min_v=1, max_v=20)
+VAD_FILTER = _env_bool("V2N_VAD_FILTER", True)
+
+
 def _load_model() -> WhisperModel:
     """Varsayılan cpu; CUDA yalnızca V2N_DEVICE=cuda ve kütüphaneler uygunsa."""
     global _model
@@ -62,11 +98,12 @@ def _reset_model() -> None:
 
 def _transcribe_to_text(path: str) -> str:
     model = _load_model()
+    lang = _transcribe_language()
     segments, _info = model.transcribe(
         path,
-        language="tr",
-        beam_size=5,
-        vad_filter=True,
+        language=lang,
+        beam_size=BEAM_SIZE,
+        vad_filter=VAD_FILTER,
     )
     return " ".join(s.text for s in segments).strip()
 
@@ -135,8 +172,18 @@ app.add_middleware(
 
 
 @app.get("/health")
-def health() -> dict[str, bool]:
-    return {"ok": True}
+def health() -> dict:
+    """Sunucu ayarının özeti (API anahtarı dönmez)."""
+    dev = os.environ.get("V2N_DEVICE", "cpu").strip().lower() or "cpu"
+    lang_eff = _transcribe_language()
+    return {
+        "ok": True,
+        "model": MODEL_SIZE,
+        "device_requested": dev,
+        "beam_size": BEAM_SIZE,
+        "vad_filter": VAD_FILTER,
+        "language": "auto" if lang_eff is None else lang_eff,
+    }
 
 
 @app.post("/transcribe")

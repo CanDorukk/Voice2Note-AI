@@ -57,15 +57,31 @@ uvicorn main:app --host 0.0.0.0 --port 8787
 
 - `--host 0.0.0.0` telefonun aynı ağdan bilgisayara erişmesi içindir (yalnızca `127.0.0.1` dinlersen telefon bağlanamaz).
 
-Tarayıcıdan test: `http://127.0.0.1:8787/health` → `{"ok":true}`
+Tarayıcıdan test: `http://127.0.0.1:8787/health` — `ok` yanında model, istenen cihaz, `beam_size`, `vad_filter`, dil özeti döner (API anahtarı yok).
 
 ### İsteğe bağlı ortam değişkenleri
 
 | Değişken | Anlam |
 |---------|--------|
-| `V2N_MODEL` | `tiny`, `base`, `small`, `medium` (varsayılan: `small`) |
-| `V2N_DEVICE` | `cpu` (varsayılan) veya `cuda` — tam CUDA/cuBLAS kurulu değilse `cpu` kullanın; `cublas64_12.dll` hatası için kod otomatik CPU’ya düşer |
+| `V2N_MODEL` | `tiny` → `base` → `small` → `medium` → `large-v2` / `large-v3` (faster-whisper destekli isimler). Varsayılan: **`small`**. Daha büyük model: genelde daha iyi transkript, daha fazla RAM/VRAM ve süre. |
+| `V2N_DEVICE` | `cpu` (varsayılan) veya `cuda` — tam CUDA/cuBLAS kurulu değilse `cpu` kullanın; `cublas64_12.dll` vb. hatalarda sunucu otomatik CPU’ya düşer. |
+| `V2N_BEAM_SIZE` | Çözüm araması genişliği (1–20, varsayılan **5**). Artırmak kaliteyi bir miktar iyileştirebilir, süreyi uzatır. |
+| `V2N_VAD_FILTER` | `true`/`1` veya `false`/`0` (varsayılan **true**). Açıkken sessiz/gürültülü kısımlar daha iyi ayrılır; çok kısa veya kesik kayıtlarda denemek için `false` denenebilir. |
+| `V2N_LANGUAGE` | Varsayılan **`tr`** (Türkçe kayıtlar). Karışık dil veya test için `auto` yazılabilir (otomatik dil seçimi). |
 | `V2N_API_KEY` | Örn. `gizli-bir-kelime` — doluysa uygulamada da aynı anahtar girilmeli |
+
+### Model boyutu — kabaca beklenti
+
+Tam ölçüm donanıma bağlıdır; yönlendirme için:
+
+| Model | Kalite (kabaca) | Not |
+|-------|-----------------|-----|
+| `tiny` / `base` | Hızlı, daha çok hata | Zayıf PC veya hızlı deneme |
+| `small` | Dengeli varsayılan | Çoğu kurulum için iyi başlangıç |
+| `medium` | Daha iyi | Daha fazla RAM/VRAM, daha uzun süre |
+| `large-v2` / `large-v3` | En iyi (faster-whisper ile) | Güçlü GPU veya sabırlı CPU; ilk indirme büyük |
+
+**CUDA:** `V2N_DEVICE=cuda` ile GPU kullanımı; yoksa `cpu` ve `int8` ile çalışır (dokümantasyon: üstteki tablo).
 
 Örnek (PowerShell):
 
