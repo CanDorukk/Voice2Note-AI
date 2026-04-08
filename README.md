@@ -33,6 +33,7 @@ Transkript (konuşmayı yazıya çevirme) **telefonda çalışmaz**: uygulama se
 
 - Uygulama paketinde **Whisper modeli veya ggml dosyası yoktur**; model **sunucu makinesinde** indirilir ve çalıştırılır.
 - Varsayılan kurulum: bilgisayarınızda `server/pc_whisper_server` ile **yerel HTTP API** (`uvicorn`, örn. port `8787`). Telefon ile **aynı Wi‑Fi** (veya erişilebilir IP) gerekir.
+- İsteğe bağlı: aynı makinede **[Ollama](https://ollama.com)** ile (`V2N_POLISH=ollama`) transkriptten sonra **Türkçe metin düzeltme**; uygulama yine yalnızca `{"text": "..."}` alır (bulut dışı, veri telefonda kalır).
 - İsteğe bağlı: aynı kodu **VPS**’e koyup HTTPS ile kullanmak (adresi uygulamada **Hakkında**’dan güncellersiniz).
 
 Ortam değişkenleri (model boyutu, CUDA/CPU, beam, VAD, dil) ve güvenlik için: **[docs/pc_whisper_sunucu.md](docs/pc_whisper_sunucu.md)**  

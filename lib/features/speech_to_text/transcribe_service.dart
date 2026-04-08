@@ -11,6 +11,9 @@ import 'package:voice_2_note_ai/services/android_content_uri.dart';
 import 'package:voice_2_note_ai/services/remote_transcribe_settings.dart';
 
 /// Transkript: yalnızca kayıtlı HTTP sunucusu (`RemoteTranscribeSettings`).
+///
+/// Sunucu `POST /transcribe` yanıtında yalnızca `text` beklenir; isteğe bağlı Ollama
+/// düzeltmesi sunucuda zincirlendiyse bu metin nihai (düzeltilmiş) içeriktir — ayrı uç gerekmez.
 class TranscribeService {
   /// Uzun sesler için üst sınır (sunucu hızına bağlı).
   static Duration transcribeTimeoutForAudioSeconds(int? audioDurationSeconds) {

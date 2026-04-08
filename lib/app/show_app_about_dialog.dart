@@ -102,7 +102,9 @@ Future<void> showAppAboutDialog(BuildContext context) async {
                     children: [
                       Text(
                         'Özet bu cihazda üretilir. Transkript için kayıtlı sunucuya '
-                        'bağlanılır (aynı Wi‑Fi veya erişilebilir ağ).',
+                        'bağlanılır (aynı Wi‑Fi veya erişilebilir ağ). Sunucuda isteğe bağlı '
+                        'Ollama ile metin düzeltmesi açıksa metin orada işlenir; veri üçüncü '
+                        'taraf bulutuna gönderilmez.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: cs.onSurfaceVariant,
                           height: 1.35,

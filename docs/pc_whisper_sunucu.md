@@ -69,6 +69,11 @@ Tarayıcıdan test: `http://127.0.0.1:8787/health` — `ok` yanında model, iste
 | `V2N_VAD_FILTER` | `true`/`1` veya `false`/`0` (varsayılan **true**). Açıkken sessiz/gürültülü kısımlar daha iyi ayrılır; çok kısa veya kesik kayıtlarda denemek için `false` denenebilir. |
 | `V2N_LANGUAGE` | Varsayılan **`tr`** (Türkçe kayıtlar). Karışık dil veya test için `auto` yazılabilir (otomatik dil seçimi). |
 | `V2N_API_KEY` | Örn. `gizli-bir-kelime` — doluysa uygulamada da aynı anahtar girilmeli |
+| `V2N_POLISH` | **`ollama`** ise transkriptten sonra yerel [Ollama](https://ollama.com) ile Türkçe düzeltme (yazım/noktalama). Boş veya `off`: sadece Whisper. |
+| `V2N_OLLAMA_BASE` | Ollama API tabanı (varsayılan: `http://127.0.0.1:11434`). |
+| `V2N_OLLAMA_MODEL` | Ollama model adı (varsayılan: `llama3.2`). `ollama list` ile kontrol edin. |
+| `V2N_OLLAMA_TIMEOUT_SEC` | Ollama HTTP zaman aşımı saniye (varsayılan: **120**, en fazla 600). |
+| `V2N_OLLAMA_SYSTEM_PROMPT` | Doluysa Türkçe düzeltme için sistem prompt’unu tamamen değiştirir (gelişmiş kullanım). |
 
 ### Model boyutu — kabaca beklenti
 
@@ -90,6 +95,23 @@ $env:V2N_MODEL="small"
 $env:V2N_API_KEY="benim-gizli-anahtarim"
 uvicorn main:app --host 0.0.0.0 --port 8787
 ```
+
+### Ollama ile Türkçe metin düzeltme (isteğe bağlı)
+
+1. Bilgisayarda **[Ollama](https://ollama.com)** kurun ve bir model indirin, örn. `ollama pull llama3.2` veya Türkçe için uygun başka bir model.
+2. Ollama varsayılan olarak `http://127.0.0.1:11434` üzerinden dinler; Voice2Note sunucusuyla **aynı makinede** çalışması yeterlidir.
+3. PowerShell örneği (Whisper sunucusunu başlatmadan önce aynı oturumda):
+
+```powershell
+$env:V2N_POLISH="ollama"
+$env:V2N_OLLAMA_MODEL="llama3.2"
+uvicorn main:app --host 0.0.0.0 --port 8787
+```
+
+- **`POST /transcribe`:** Önce faster-whisper ile metin üretilir; ardından Ollama ile düzeltilir. Uygulama yine yalnızca **`{"text":"..."}`** alır (ek alan yok); Flutter tarafında ek istek gerekmez.
+- Ollama kapalı veya hata: sunucu **Whisper metnini** döndürür (düzeltme atlanır; log’a uyarı yazılır).
+- **`POST /polish`:** JSON gövde `{"text":"..."}` — yalnızca düzeltme (ses yok). `V2N_POLISH=ollama` gerekir; API anahtarı kullanıyorsanız aynı `X-Api-Key` başlığı.
+- `/health` çıktısında `polish`, açıksa `ollama_base` ve `ollama_model` görünür.
 
 ## 3) Bilgisayarın yerel IP adresini bul
 

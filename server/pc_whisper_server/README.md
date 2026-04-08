@@ -6,6 +6,8 @@ Kurulum ve uygulama bağlantısı için ana dokümantasyon:
 
 Sunucu ses dosyalarını **ffmpeg** ile normalize eder; bilgisayarda `ffmpeg` kurulu ve **PATH**’te olmalı.
 
+İsteğe bağlı **Ollama** ile Türkçe metin düzeltme (`V2N_POLISH=ollama`) ve `POST /polish` uç noktası: **[docs/pc_whisper_sunucu.md](../../docs/pc_whisper_sunucu.md)** içindeki “Ollama ile Türkçe metin düzeltme” bölümüne bakın.
+
 Özet (önce `server\pc_whisper_server` klasörüne `cd` et):
 
 ```powershell
