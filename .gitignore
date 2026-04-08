@@ -7,7 +7,12 @@
 *.log
 *.pyc
 *.swp
+*.bak
+*.orig
+*~
 .DS_Store
+Thumbs.db
+ehthumbs.db
 .atom/
 .buildlog/
 .history
@@ -34,6 +39,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+coverage/
 
 # Symbolication related
 app.*.symbols
@@ -78,6 +84,13 @@ google-services.json
 **/firebase-adminsdk*.json
 **/credentials*
 **/.credentials
+*.token
+*.tokens
+auth-token*
+**/auth-token*
+id_rsa
+id_ed25519
+*.mobileprovision
 
 # Yerel özel notlar / taslaklar (isteğe bağlı klasör veya uzantı)
 **/PRIVATE/

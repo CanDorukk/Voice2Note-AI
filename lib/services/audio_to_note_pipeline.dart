@@ -29,8 +29,7 @@ Future<void> runAudioToNotePipeline({
       messenger.showSnackBar(
         SnackBar(
           content: const Text(
-            'Transkript için önce Hakkında bölümünden sunucu adresini kaydedin '
-            '(bilgisayarınızda API açık olmalı).',
+            'Konuşmanızı yazıya dökmek için önce Hakkında bölümünden bağlantı adresinizi kaydedin.',
           ),
           backgroundColor: Colors.red.shade800,
           duration: const Duration(seconds: 8),
@@ -45,10 +44,10 @@ Future<void> runAudioToNotePipeline({
             context: navCtx,
             builder: (dialogContext) {
               return AlertDialog(
-                title: const Text('Sunucu adresi gerekli'),
+                title: const Text('Bağlantı adresi gerekli'),
                 content: const Text(
-                  'Transkript için önce Hakkında bölümünden bilgisayarınızdaki API '
-                  'adresini kaydedin (aynı Wi‑Fi veya erişilebilir ağ).',
+                  'Konuşma metnini oluşturmak için bir adres tanımlamanız gerekiyor. '
+                  'Hakkında menüsünden ekleyebilirsiniz.',
                 ),
                 actions: [
                   TextButton(
@@ -111,7 +110,7 @@ Future<void> runAudioToNotePipeline({
       await container.read(noteRepositoryProvider).insert(
             NoteModel(
               audioPath: audioPath,
-              transcript: 'İşlem tamamlanamadı.',
+              transcript: 'Not hazırlanamadı.',
               summary: '',
               duration: durationSeconds,
               createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -122,7 +121,11 @@ Future<void> runAudioToNotePipeline({
 
     messenger.showSnackBar(
       SnackBar(
-        content: Text('Kayıt işlenemedi: $e'),
+        content: Text(
+          kDebugMode
+              ? 'Not oluşturulamadı: $e'
+              : 'Not oluşturulamadı. Bağlantınızı kontrol edip tekrar deneyin.',
+        ),
         backgroundColor: Colors.red.shade800,
         duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,

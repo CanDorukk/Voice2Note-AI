@@ -40,22 +40,22 @@ class PdfService {
               pw.Text('Oluşturulma: $dateStr', style: pw.TextStyle(font: notoSansFont)),
               pw.SizedBox(height: 18),
               pw.Text(
-                'Transkript',
-                style: pw.TextStyle(font: notoSansFont, fontSize: 14),
-              ),
-              pw.SizedBox(height: 6),
-              pw.Text(
-                note.transcript.trim().isEmpty ? '-' : note.transcript,
-                style: pw.TextStyle(font: notoSansFont),
-              ),
-              pw.SizedBox(height: 14),
-              pw.Text(
                 'Özet',
                 style: pw.TextStyle(font: notoSansFont, fontSize: 14),
               ),
               pw.SizedBox(height: 6),
               pw.Text(
                 note.summary.trim().isEmpty ? '-' : note.summary,
+                style: pw.TextStyle(font: notoSansFont),
+              ),
+              pw.SizedBox(height: 14),
+              pw.Text(
+                'Transkript',
+                style: pw.TextStyle(font: notoSansFont, fontSize: 14),
+              ),
+              pw.SizedBox(height: 6),
+              pw.Text(
+                note.transcript.trim().isEmpty ? '-' : note.transcript,
                 style: pw.TextStyle(font: notoSansFont),
               ),
             ],

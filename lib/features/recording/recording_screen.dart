@@ -146,8 +146,8 @@ class RecordingScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Kayıt bitince notlar listesinde işlenir; transkript için '
-                      'Hakkında’da sunucu adresi kayıtlı olmalıdır.',
+                      'Kayıt bittiğinde notlarınıza eklenir. Yazıya döküm için '
+                      'Hakkında’da bağlantı adresinizin kayıtlı olması gerekir.',
                       textAlign: TextAlign.center,
                       style: textTheme.bodySmall?.copyWith(
                         height: 1.4,

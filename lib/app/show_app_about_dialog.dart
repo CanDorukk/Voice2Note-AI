@@ -62,14 +62,7 @@ Future<void> showAppAboutDialog(BuildContext context) async {
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
-                            '${info.version} (${info.buildNumber})',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            'Özet cihazda; transkript sunucuda',
+                            'Sürüm ${info.version} · ${info.buildNumber}',
                             style: textTheme.bodySmall?.copyWith(
                               color: cs.onSurfaceVariant,
                             ),
@@ -101,10 +94,10 @@ Future<void> showAppAboutDialog(BuildContext context) async {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Özet bu cihazda üretilir. Transkript için kayıtlı sunucuya '
-                        'bağlanılır (aynı Wi‑Fi veya erişilebilir ağ). Sunucuda isteğe bağlı '
-                        'Ollama ile metin düzeltmesi açıksa metin orada işlenir; veri üçüncü '
-                        'taraf bulutuna gönderilmez.',
+                        'Özetler bu cihazda oluşturulur. Konuşmanızın yazıya dönmesi için '
+                        'Hakkında’da tanımladığınız bağlantı kullanılır. İsteğe bağlı gelişmiş '
+                        'düzeltmeler yalnızca sizin bağlantınızda çalışır; başka bir buluta '
+                        'gönderilmez.',
                         style: textTheme.bodyMedium?.copyWith(
                           color: cs.onSurfaceVariant,
                           height: 1.35,

@@ -277,8 +277,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          'Dosyalardan veya galeriden ses seçebilirsiniz; '
-                          'transkript bilgisayarınızdaki sunucuda yapılır.',
+                          'Galeriden veya dosyalardan da ses seçebilirsiniz.',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: cs.onSurfaceVariant,
@@ -414,7 +413,7 @@ class _PendingProcessingTileState extends State<_PendingProcessingTile> {
     final bodySmall = Theme.of(context).textTheme.bodySmall;
     return Semantics(
       label:
-          '${item.displayLabel}, transkript sunucuda çalışıyor, kayıt süresi $dur, geçen ${_fmtElapsed()}',
+          '${item.displayLabel}, yazıya dönüştürülüyor, kayıt süresi $dur, geçen ${_fmtElapsed()}',
       hint: 'İşlem bitince tam not listede görünür',
       child: ListTile(
         isThreeLine: true,
@@ -436,8 +435,8 @@ class _PendingProcessingTileState extends State<_PendingProcessingTile> {
         ),
         title: Text(item.displayLabel),
         subtitle: Text(
-          'Transkript kayıtlı sunucuda çalışıyor (bilgisayarınız açık ve aynı ağda olmalı).\n'
-          'Geçen: ${_fmtElapsed()} · Uzun kayıtlar birkaç–on dakika sürebilir; uygulama donmadı.\n'
+          'Konuşmanız yazıya döndürülüyor…\n'
+          'Geçen süre: ${_fmtElapsed()} · Uzun kayıtlarda biraz bekleyebilirsiniz.\n'
           'Ses süresi: $dur',
           style: bodySmall?.copyWith(
             color: cs.onSurfaceVariant,

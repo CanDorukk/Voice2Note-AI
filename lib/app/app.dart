@@ -17,6 +17,7 @@ class App extends ConsumerWidget {
     final themeMode = themeAsync.value ?? ThemeMode.system;
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       navigatorKey: appRootNavigatorKey,
       title: 'Voice2 Note AI',
       theme: appTheme,

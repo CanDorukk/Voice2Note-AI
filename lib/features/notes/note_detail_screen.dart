@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,7 +100,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     if (id == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bu not kayıtlı değil; düzenlenemez.')),
+        const SnackBar(content: Text('Bu not henüz kayıtlı değil.')),
       );
       return;
     }
@@ -117,7 +118,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     if (!mounted) return;
     if (rows == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kaydedilemedi.')),
+        const SnackBar(content: Text('Değişiklikler kaydedilemedi.')),
       );
       return;
     }
@@ -128,7 +129,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     });
     ref.invalidate(notesListProvider);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Not güncellendi')),
+      const SnackBar(content: Text('Kaydedildi')),
     );
   }
 
@@ -137,7 +138,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     if (audioPath.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ses dosyası yolu yok.')),
+        const SnackBar(content: Text('Bu notta ses bulunamadı.')),
       );
       return;
     }
@@ -163,7 +164,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Oynatma hatası: $e')),
+        SnackBar(
+          content: Text(
+            kDebugMode ? 'Oynatılamadı: $e' : 'Ses oynatılamadı. Dosyayı kontrol edin.',
+          ),
+        ),
       );
     }
   }
@@ -262,38 +267,13 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   ),
             ),
             const SizedBox(height: AppSpacing.md),
-            _SectionCard(
-              title: 'Transkript',
-              icon: AppIcons.transcriptSection,
-              titleAction: _editing
-                  ? null
-                  : _copyTitleAction(
-                      transcriptCopy,
-                      'Transkripti kopyala',
-                      'Transkript kopyalandı',
-                    ),
-              child: _editing
-                  ? TextField(
-                      controller: _transcriptController,
-                      minLines: 4,
-                      maxLines: 12,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      decoration: const InputDecoration(
-                        alignLabelWithHint: true,
-                        hintText: 'Transkript metni',
-                      ),
-                    )
-                  : SelectableText(
-                      _note.transcript.trim().isEmpty
-                          ? 'Transkript henüz hazır değil.'
-                          : _note.transcript,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            height: 1.45,
-                            color: _note.transcript.trim().isEmpty
-                                ? cs.onSurfaceVariant
-                                : null,
-                          ),
-                    ),
+            _AudioPlaybackCard(
+              audioPath: _note.audioPath,
+              position: _position,
+              duration: _duration,
+              isPlaying: _isPlaying,
+              onPlayPause: _togglePlay,
+              onSeek: _seekTo,
             ),
             const SizedBox(height: AppSpacing.md),
             _SectionCard(
@@ -304,7 +284,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   : _copyTitleAction(
                       summaryCopy,
                       'Özeti kopyala',
-                      'Özet kopyalandı',
+                      'Özet panoya kopyalandı',
                     ),
               child: _editing
                   ? TextField(
@@ -319,7 +299,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     )
                   : SelectableText(
                       _note.summary.trim().isEmpty
-                          ? 'Özet henüz hazır değil.'
+                          ? 'Özet henüz yok.'
                           : _note.summary,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             height: 1.45,
@@ -329,14 +309,39 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                           ),
                     ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            _AudioPlaybackCard(
-              audioPath: _note.audioPath,
-              position: _position,
-              duration: _duration,
-              isPlaying: _isPlaying,
-              onPlayPause: _togglePlay,
-              onSeek: _seekTo,
+            const SizedBox(height: AppSpacing.md),
+            _SectionCard(
+              title: 'Transkript',
+              icon: AppIcons.transcriptSection,
+              titleAction: _editing
+                  ? null
+                  : _copyTitleAction(
+                      transcriptCopy,
+                      'Transkripti kopyala',
+                      'Transkript panoya kopyalandı',
+                    ),
+              child: _editing
+                  ? TextField(
+                      controller: _transcriptController,
+                      minLines: 4,
+                      maxLines: 12,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      decoration: const InputDecoration(
+                        alignLabelWithHint: true,
+                        hintText: 'Transkript metni',
+                      ),
+                    )
+                  : SelectableText(
+                      _note.transcript.trim().isEmpty
+                          ? 'Konuşma metni henüz yok.'
+                          : _note.transcript,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            height: 1.45,
+                            color: _note.transcript.trim().isEmpty
+                                ? cs.onSurfaceVariant
+                                : null,
+                          ),
+                    ),
             ),
           ],
         ),

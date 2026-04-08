@@ -103,10 +103,10 @@ class _RemoteTranscribeSettingsSectionState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const AboutSectionHeader('Transkript sunucusu', compactTop: true),
+        const AboutSectionHeader('Konuşma metni bağlantısı', compactTop: true),
         Text(
-          'Ses metne bilgisayarınızda veya VPS’te çalışan API ile dönüştürülür. '
-          'Kök adresi girin (örn. http://192.168.1.10:8787). Kurulum: docs/pc_whisper_sunucu.md',
+          'Konuşmanızın yazıya dönmesi için bir adres girmeniz gerekir '
+          '(örn. http://192.168.1.10:8787). Kurulum adımları geliştirici belgelerinde yer alır.',
           style: textTheme.bodySmall?.copyWith(
             color: cs.onSurfaceVariant,
             height: 1.35,
@@ -118,7 +118,7 @@ class _RemoteTranscribeSettingsSectionState
           keyboardType: TextInputType.url,
           autocorrect: false,
           decoration: const InputDecoration(
-            labelText: 'Sunucu kök adresi',
+            labelText: 'Bağlantı adresi',
             hintText: 'http://192.168.1.10:8787',
           ),
         ),
@@ -128,8 +128,8 @@ class _RemoteTranscribeSettingsSectionState
           obscureText: true,
           autocorrect: false,
           decoration: const InputDecoration(
-            labelText: 'API anahtarı (isteğe bağlı)',
-            hintText: 'Sunucuda V2N_API_KEY ayarlıysa',
+            labelText: 'Güvenlik anahtarı (isteğe bağlı)',
+            hintText: 'Kullandıysanız buraya da yazın',
           ),
         ),
         const SizedBox(height: AppSpacing.sm),

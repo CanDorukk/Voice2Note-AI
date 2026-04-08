@@ -44,9 +44,9 @@ Sunucu klasörü özeti: **[server/pc_whisper_server/README.md](server/pc_whispe
 ## Özellikler (özet)
 
 - Tema (sistem / açık / koyu), not listesi, transkript ve özet üzerinden arama (Türkçe eş anlamlı desteği)
-- Not detayında düzenleme, kopyalama, ses oynatma, PDF ve paylaşım
-- **Hakkında** ekranında transkript sunucusu taban URL ve isteğe bağlı API anahtarı
-- Android odaklı; iOS bu repoda tam kapsamlı değildir
+- Not detayında **ses → özet → transkript** sırası; düzenleme, kopyalama, oynatma, PDF ve paylaşım
+- **Hakkında** ekranında konuşma metni için bağlantı adresi ve isteğe bağlı güvenlik anahtarı; uygulama içi bilgilendirmeler kısa ve kullanıcı odaklıdır
+- PDF / paylaşım önizlemelerinde özet ve transkript düzeni; Android odaklı (iOS bu repoda tam kapsamlı değildir)
 
 ## Gereksinimler
 

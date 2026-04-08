@@ -100,10 +100,10 @@ class _SplashScreenState extends State<SplashScreen> {
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           kIsWeb || !Platform.isAndroid
-                              ? 'Kayıtlarınızı metne dökün, kısa özetler alın.'
-                              : 'Kayıtlarınızı metne dökün, kısa özetler alın.\n'
-                                  'Transkript bilgisayarınızdaki sunucu üzerinden çalışır; '
-                                  'adresi Hakkında bölümünden girin.',
+                              ? 'Sesli notlarınızı metne çevirin, kısa özetler alın.'
+                              : 'Sesli notlarınızı metne çevirin, kısa özetler alın.\n'
+                                  'İlk kullanımda bağlantı adresinizi Hakkında’dan '
+                                  'girebilirsiniz.',
                           style: textTheme.bodyLarge?.copyWith(
                             color: cs.onSurfaceVariant,
                             height: 1.4,

@@ -32,8 +32,7 @@ class TranscribeService {
   }) async {
     final remoteBase = await RemoteTranscribeSettings.getBaseUrl();
     if (remoteBase == null || remoteBase.isEmpty) {
-      return 'Transkript için Hakkında’dan sunucu adresini kaydedin. '
-          'Bilgisayarınızda API’yi çalıştırın (docs/pc_whisper_sunucu.md).';
+      return 'Konuşmanızı yazıya dökmek için Hakkında menüsünden bağlantı adresinizi ekleyin.';
     }
     return _transcribeViaRemoteHttp(
       baseUrl: remoteBase,
@@ -58,12 +57,12 @@ class TranscribeService {
       );
       final ok = await AndroidContentUri.copyToFile(audioPath, pathForUpload);
       if (!ok) {
-        return 'Ses dosyası okunamadı (içerik URI).';
+        return 'Ses dosyası açılamadı.';
       }
     }
     final file = File(pathForUpload);
     if (!await file.exists()) {
-      return 'Ses dosyası bulunamadı.';
+      return 'Ses dosyası bulunamadı. Tekrar deneyin.';
     }
     final timeoutMin = (audioDurationSeconds != null && audioDurationSeconds > 0)
         ? ((audioDurationSeconds * 3) / 60).ceil().clamp(5, 120)
@@ -90,29 +89,30 @@ class TranscribeService {
       final streamed = await request.send().timeout(timeout);
       final body = await streamed.stream.bytesToString();
       if (streamed.statusCode != 200) {
-        return 'Sunucu yanıtı (${streamed.statusCode}): ${body.length > 500 ? "${body.substring(0, 500)}…" : body}';
+        return 'Metin alınamadı (${streamed.statusCode}). Bağlantınızı kontrol edip tekrar deneyin.';
       }
       final decoded = jsonDecode(body);
       if (decoded is! Map<String, dynamic>) {
-        return 'Sunucu yanıtı beklenen JSON değil.';
+        return 'Beklenmeyen bir yanıt alındı. Bir süre sonra tekrar deneyin.';
       }
       final text = decoded['text'];
       if (text is! String) {
-        return 'Sunucu yanıtında metin yok.';
+        return 'Metin bulunamadı. Tekrar deneyin.';
       }
       final t = text.trim();
       if (t.isEmpty) {
-        return 'Sunucu boş metin döndü.';
+        return 'Boş metin alındı. Kaydı tekrar deneyin.';
       }
       return t;
     } on TimeoutException {
-      return 'Transkript zaman aşımı (${timeout.inMinutes} dk). '
-          'Sunucunun açık ve aynı ağda olduğundan emin olun.';
+      return 'İşlem çok uzun sürdü (${timeout.inMinutes} dk). '
+          'Bağlantınızı kontrol edip tekrar deneyin.';
     } catch (e, st) {
       if (kDebugMode) {
         debugPrint('TranscribeService._transcribeViaRemoteHttp: $e\n$st');
+        return 'Transkript tamamlanamadı: $e';
       }
-      return 'Transkript başarısız: $e';
+      return 'Transkript tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.';
     }
   }
 }
