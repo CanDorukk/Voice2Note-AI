@@ -20,47 +20,57 @@ class PdfService {
 
     final pdf = pw.Document();
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (context) {
-          final createdAt =
-              DateTime.fromMillisecondsSinceEpoch(note.createdAt * 1000);
-          final dateStr = '${createdAt.day}.${createdAt.month}.${createdAt.year}';
+    final createdAt =
+        DateTime.fromMillisecondsSinceEpoch(note.createdAt * 1000);
+    final dateStr = '${createdAt.day}.${createdAt.month}.${createdAt.year}';
+    final summaryBody =
+        note.summary.trim().isEmpty ? '-' : note.summary;
+    final transcriptBody =
+        note.transcript.trim().isEmpty ? '-' : note.transcript;
 
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                'Voice2 Note AI',
-                style: pw.TextStyle(font: notoSansFont, fontSize: 20),
-              ),
-              pw.SizedBox(height: 8),
-              pw.Text('Not ID: ${note.id ?? '-'}', style: pw.TextStyle(font: notoSansFont)),
-              pw.Text('Oluşturulma: $dateStr', style: pw.TextStyle(font: notoSansFont)),
-              pw.SizedBox(height: 18),
-              pw.Text(
-                'Özet',
-                style: pw.TextStyle(font: notoSansFont, fontSize: 14),
-              ),
-              pw.SizedBox(height: 6),
-              pw.Text(
-                note.summary.trim().isEmpty ? '-' : note.summary,
-                style: pw.TextStyle(font: notoSansFont),
-              ),
-              pw.SizedBox(height: 14),
-              pw.Text(
-                'Transkript',
-                style: pw.TextStyle(font: notoSansFont, fontSize: 14),
-              ),
-              pw.SizedBox(height: 6),
-              pw.Text(
-                note.transcript.trim().isEmpty ? '-' : note.transcript,
-                style: pw.TextStyle(font: notoSansFont),
-              ),
-            ],
-          );
-        },
+    // Tek sayfalı Column taşması transkripti boyamıyor; MultiPage + span gerekir.
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        maxPages: 500,
+        build: (context) => [
+          pw.Text(
+            'Voice2 Note AI',
+            style: pw.TextStyle(font: notoSansFont, fontSize: 20),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            'Not ID: ${note.id ?? '-'}',
+            style: pw.TextStyle(font: notoSansFont),
+          ),
+          pw.Text(
+            'Oluşturulma: $dateStr',
+            style: pw.TextStyle(font: notoSansFont),
+          ),
+          pw.SizedBox(height: 18),
+          pw.Text(
+            'Özet',
+            style: pw.TextStyle(font: notoSansFont, fontSize: 14),
+          ),
+          pw.SizedBox(height: 6),
+          pw.Text(
+            summaryBody,
+            style: pw.TextStyle(font: notoSansFont),
+            overflow: pw.TextOverflow.span,
+          ),
+          pw.SizedBox(height: 14),
+          pw.Text(
+            'Transkript',
+            style: pw.TextStyle(font: notoSansFont, fontSize: 14),
+          ),
+          pw.SizedBox(height: 6),
+          pw.Text(
+            transcriptBody,
+            style: pw.TextStyle(font: notoSansFont),
+            overflow: pw.TextOverflow.span,
+          ),
+        ],
       ),
     );
 
