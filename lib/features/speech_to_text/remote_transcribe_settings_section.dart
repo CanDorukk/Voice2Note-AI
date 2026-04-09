@@ -106,7 +106,7 @@ class _RemoteTranscribeSettingsSectionState
         const AboutSectionHeader('Konuşma metni bağlantısı', compactTop: true),
         Text(
           'Konuşmanızın yazıya dönmesi için bir adres girmeniz gerekir '
-          '(örn. http://192.168.1.10:8787). Kurulum adımları geliştirici belgelerinde yer alır.',
+          'Kurulum adımları geliştirici belgelerinde yer alır.',
           style: textTheme.bodySmall?.copyWith(
             color: cs.onSurfaceVariant,
             height: 1.35,
