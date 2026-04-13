@@ -1,39 +1,39 @@
 # Voice2 Note AI
 
-Ses kaydini metne cevirip nota donusturen, ozetleyen ve PDF olarak disa aktarabilen Flutter tabanli Android uygulamasi.
+Ses kaydını metne çevirip nota dönüştüren, özetleyen ve PDF olarak dışa aktarabilen Flutter tabanlı Android uygulaması.
 
-## Surum ve Durum
+## Sürüm ve Durum
 
-- **Urun cizgisi:** v1
-- **Paket surumu:** `0.1.0` (`pubspec.yaml`)
-- **Platform odagi:** Android
-- **Transkript mimarisi:** Mobil uygulama + ayri Whisper sunucusu
+- **Ürün çizgisi:** v1
+- **Paket sürümü:** `0.1.0` (`pubspec.yaml`)
+- **Platform odağı:** Android
+- **Transkript mimarisi:** Mobil uygulama + ayrı Whisper sunucusu
 
 ## Neler Yapabilirsiniz?
 
-- Ses kaydi veya dosyadan ice aktarma ile not olusturma
-- Transkript alma (sunucu uzerinden)
-- TextRank tabanli ozet olusturma
-- Not listesinde arama (transkript + ozet)
-- Ses oynatma, metin duzenleme ve kopyalama
-- PDF onizleme, yazdirma, dosyaya kaydetme
-- Notu metin/PDF olarak paylasma
-- Tema secimi (sistem / acik / koyu)
+- Ses kaydı veya dosyadan içe aktarma ile not oluşturma
+- Transkript alma (sunucu üzerinden)
+- TextRank tabanlı özet oluşturma
+- Not listesinde arama (transkript + özet)
+- Ses oynatma, metin düzenleme ve kopyalama
+- PDF önizleme, yazdırma, dosyaya kaydetme
+- Notu metin/PDF olarak paylaşma
+- Tema seçimi (sistem / açık / koyu)
 
-## Mimari Ozet
+## Mimari Özet
 
 ```text
-[Android Uygulamasi] -- HTTP --> [PC/VPS Whisper Sunucusu]
-       |                               |
-  kayit / dosya                    faster-whisper + ffmpeg
-       |                               |
-       +-------- POST /transcribe -----+
-       +<------ JSON { "text": "..." } -+
+[Android Uygulaması] -- HTTP --> [PC/VPS Whisper Sunucusu]
+       |                              |
+  kayıt / dosya                   faster-whisper + ffmpeg
+       |                              |
+       +-------- POST /transcribe ----+
+       +<------ JSON { "text": "..." } +
 ```
 
-> Uygulamanin icinde Whisper modeli yoktur. Model sunucu tarafinda calisir.
+> Uygulamanın içinde Whisper modeli yoktur. Model sunucu tarafında çalışır.
 
-## Teknoloji Yigini
+## Teknoloji Yığını
 
 ### Mobil (Flutter)
 
@@ -51,17 +51,17 @@ Ses kaydini metne cevirip nota donusturen, ozetleyen ve PDF olarak disa aktarabi
 - FastAPI
 - faster-whisper
 - ffmpeg
-- (Opsiyonel) Ollama ile metin duzeltme
+- Ollama (transkript sonrası metin düzeltme senaryoları için)
 
-## Mobil Kurulum (Uygulama)
+## Mobil Kurulum ve Çalıştırma (Android)
 
 ### Gereksinimler
 
 - Flutter SDK
 - Dart SDK (`>=3.4.3 <4.0.0`)
-- Android Studio veya Android SDK + emu/cihaz
+- Android Studio veya Android SDK + Android cihaz/emülatör
 
-### Adimlar
+### Adımlar
 
 ```bash
 git clone <repo-url>
@@ -70,25 +70,24 @@ flutter pub get
 flutter run
 ```
 
-### Uygulamada Yapilacak Son Ayar
+### Uygulama İçinde Son Ayar
 
-Uygulama acildiktan sonra **Hakkinda** ekranindan transkript sunucu adresini girin.
+Uygulama açıldıktan sonra **Hakkında** ekranından transkript sunucu adresini girin.
 
-Ornek:
+Örnek:
 
-- `http://192.168.1.10:8787` (ayni Wi-Fi aginda yerel PC)
+- `http://192.168.1.10:8787` (aynı Wi-Fi ağında yerel PC)
 - `https://api.senin-domainin.com` (uzak sunucu)
 
 ## Server Kurulum (PC Whisper Sunucusu)
 
-Sunucu kodu: `server/pc_whisper_server`
-
-Detayli dokumantasyon: [`docs/pc_whisper_sunucu.md`](docs/pc_whisper_sunucu.md)
+Sunucu kodu: `server/pc_whisper_server`  
+Detaylı dokümantasyon: [`docs/pc_whisper_sunucu.md`](docs/pc_whisper_sunucu.md)
 
 ### Gereksinimler
 
 - Python 3.10+
-- ffmpeg (PATH uzerinde olmali)
+- ffmpeg (PATH üzerinde olmalı)
 - (Opsiyonel) NVIDIA GPU + CUDA
 
 ### Windows (PowerShell)
@@ -101,35 +100,25 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8787
 ```
 
-### Linux/macOS
+Sunucu ayağa kalkınca mobil uygulamada taban adresi olarak bu host/port bilgisini kullanın.
 
-```bash
-cd server/pc_whisper_server
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8787
-```
-
-Sunucu ayaga kalkinca mobil uygulamada taban adresi olarak bu host/port bilgisini kullanin.
-
-## Gelistirme Komutlari
+## Geliştirme Komutları
 
 ```bash
 flutter analyze
 flutter test
 ```
 
-CI akisi: [`.github/workflows/flutter_ci.yml`](.github/workflows/flutter_ci.yml)
+CI akışı: [`.github/workflows/flutter_ci.yml`](.github/workflows/flutter_ci.yml)
 
-## Dizin Ozeti
+## Dizin Özeti
 
 ```text
-lib/                      # Flutter uygulamasi
+lib/                      # Flutter uygulaması
 server/pc_whisper_server/ # Whisper HTTP API
-docs/                     # Kurulum ve teknik dokumanlar
+docs/                     # Kurulum ve teknik dokümanlar
 ```
 
 ## Lisans
 
-Bu proje `LICENSE` dosyasinda belirtilen lisans ile dagitilmaktadir.
+Bu proje `LICENSE` dosyasında belirtilen lisans ile dağıtılmaktadır.
